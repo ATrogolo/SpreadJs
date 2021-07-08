@@ -54,14 +54,14 @@ Il _Command_ eseguito per salvare i dati sarà quello indicato dal _Designer_ ne
 
 Eseguirà il Book e potrà visualizzare (e modificare) lo SpreadSheet preparato dal _Configurator_.
 
-Nel dettaglio gli step saranno: 
+Nel dettaglio gli step saranno:
 
 - Lettura della configurazione dello SpreadSheet (property `Configuration`)
 - Selezione delle tabelle bindate allo SpreadSheet
 - Lettura delle tabelle (dataDriven)
 - Visualizzazione dei dati
 
-Potrà modificare le tabelle del Model, semplicemente modificando il contenuto delle celle. 
+Potrà modificare le tabelle del Model, semplicemente modificando il contenuto delle celle.
 Ogni modifica, se associata ad un dataMember del Model, aggiornerà il dataSet.
 
 Potrà inoltre selezionare i `Button` nel Ribbon ed eseguire le azioni associate.
@@ -333,16 +333,16 @@ Le opzioni sono:
 ## ToDo
 
 - [ ] Export di tabelle statiche nel JSON di SpreadJs
-- [ ] Command di Save Config
 - [ ] Come configurare il Ribbon
 - [ ] Lettura tabella con la configurazione dal Model
-- [ ] Definizione property per salvare la configurazione
 - [ ] Check su ricaricamento dataMember multipli a fronte del click su un "Button" del Ribbon da parte dell'_EndUser_
   >
-- [ ] Manda mail a SpreadJs con:
+- [x] Manda mail a SpreadJs con:
 
   - C'è un evento che mi consente di intercettare il cambio nome per una tabella?
   - Funzionamento del copia e incolla delle tabelle
   - Documentazione sul Ribbon?
+  - Definizioni dei tipi (TypeScript) per la parte _Designer_
 
+- [x] ~~Definizione property per salvare la configurazione~~
 - [ ]
