@@ -36,3 +36,24 @@
     transform: rotate(360deg);
   }
 }
+
+.toolbar button {
+  color: white;
+  background: #007ae2;
+  border-radius: 5px;
+  border: none;
+  padding: 5px;
+  text-transform: uppercase;
+  font-size: 0.7em;
+  margin-left: 5px;
+  margin-right: 5px;
+  cursor: pointer;
+}
+
+.designer-mode.on {
+  background: #006500;
+}
+
+.designer-mode.off {
+  background: #ca0000;
+}
