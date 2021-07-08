@@ -1,6 +1,6 @@
 # SpreadSheet Viewer
 
-## Obiettivo
+## Requisiti
 
 Mettere a disposizione dei Designer un foglio di calcolo che possa esser personalizzato per poi essere utilizzato per operazioni di reportistica dati da un EndUser.
 
@@ -16,6 +16,55 @@ Questa configurazione verrà salvata nel layout del Book.
 Il Configurator utilizzerà quanto messo a disposizione dal Designer ed utilizzerà lo SpreadJsDesigner tool per configurare l'Excel (tabelle, ribbon, stili ...)
 
 L'EndUser sarà colui che utilizzerà il prodotto finale per visualizzare i dati / dashboard o per fare data-entry.
+
+---
+
+### User Stories
+
+#### 1. Designer
+
+Configura nella property `DataSources` le sorgenti dati accessibili al _Configurator_.
+Ognuna di esse sarà contraddistinta dalle stesse property del tipo _Source_ e da una label che identificherà la _dataSource_ nell'elenco presentato al _Configurator_.
+L'elenco verrà visualizzato in un menù a tendina nel Ribbon e sarà accessibile solo al _Configurator_.
+
+Per ognuno dei _dataSource_ potrà configurare quali colonne visualizzare sullo SpreadSheet indicando, per ognuna di esse:
+
+- Header
+- Formattazione valore (date)
+- Larghezza della colonna
+- Funzione che va a manipolare il valore (Adapter)
+
+Diversamente verranno riportate tutte le colonne lette dal dataMember.
+
+Definisce quindi nella property `Buttons` i pulsanti che saranno presenti nel Ribbon.
+Ogni `Button` avrà un nome, un'icona e un'azione da eseguire alla sua selezione.
+
+Tramite la property `Configuration` imposterà la tabella nella quale salvare la configurazione dello SpreadSheet.
+Tramite la property `SaveConfig` indicherà il _Command_ che si occuperà di persistere la configurazione su _DataShelf_.
+
+#### 2. Configurator
+
+Eseguirà il Book contenente lo SpreadSheet e, tramite il menu a tendina presente nel Ribbon, inserirà le tabelle nello SpreadSheeet.
+Personalizzerà il contenuto dello SpreadSheet ed inserirà stili e formattazioni custom.
+
+Salverà infine quanto realizzato tramite un pulsante presente nel Ribbon che persisterà quanto configurato su _DataShelf_.
+Il _Command_ eseguito per salvare i dati sarà quello indicato dal _Designer_ nella property `SaveConfig`.
+
+#### 3. EndUser
+
+Eseguirà il Book e potrà visualizzare (e modificare) lo SpreadSheet preparato dal _Configurator_.
+
+Nel dettaglio gli step saranno: 
+
+- Lettura della configurazione dello SpreadSheet (property `Configuration`)
+- Selezione delle tabelle bindate allo SpreadSheet
+- Lettura delle tabelle (dataDriven)
+- Visualizzazione dei dati
+
+Potrà modificare le tabelle del Model, semplicemente modificando il contenuto delle celle. 
+Ogni modifica, se associata ad un dataMember del Model, aggiornerà il dataSet.
+
+Potrà inoltre selezionare i `Button` nel Ribbon ed eseguire le azioni associate.
 
 ---
 
@@ -281,12 +330,19 @@ Le opzioni sono:
    > 2. Senza i dati
    > 3. Aggiungere all'export "senza dati" il contenuto delle tabelle "statiche"
 
----
+## ToDo
 
-### Scenari
+- [ ] Export di tabelle statiche nel JSON di SpreadJs
+- [ ] Command di Save Config
+- [ ] Come configurare il Ribbon
+- [ ] Lettura tabella con la configurazione dal Model
+- [ ] Definizione property per salvare la configurazione
+- [ ] Check su ricaricamento dataMember multipli a fronte del click su un "Button" del Ribbon da parte dell'_EndUser_
+  >
+- [ ] Manda mail a SpreadJs con:
 
-#### 1. Designer
+  - C'è un evento che mi consente di intercettare il cambio nome per una tabella?
+  - Funzionamento del copia e incolla delle tabelle
+  - Documentazione sul Ribbon?
 
-#### 2. Configurator
-
-#### 3. EndUser
+- [ ]
