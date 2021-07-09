@@ -100,11 +100,7 @@ Potrà inoltre eseguire le azioni messe a disposizione dal Designer tramite i `B
 
 #### Aggiunta di tabelle
 
-Il _Designer_ configurerà, tramite opportune properties, le tabelle del Model che il Configurator potrà inserire nello SpreadSheet.
-
-Il _Configurator_ troverà tali tabelle in una sezione del Ribbon. La selezione di una tabella farà si che essa venga aggiunta al foglio Excel, andando a caricare i dati dal server, visualizzandoli a partire dalla cella selezionata.
-
-La presenza della tabella nel WorkBook verrà resa persistente al **salvataggio** della configurazione dell'Excel sullo Shelf.
+La presenza della tabella nel WorkBook verrà resa persistente al salvataggio della configurazione dell'Excel sullo Shelf.
 La configurazione non conterrà però il riferimento alla tabella del Model; occorrerà pertanto salvare in una configurazione a parte queste informazioni sullo Shelf. (Ad esempio in una nuova colonna)
 
 Es:
@@ -130,7 +126,7 @@ Es:
 }
 ```
 
-**Config Binding:**
+**Config Irion (binding):**
 
 ```json
 [
@@ -139,22 +135,36 @@ Es:
     "table": "table1",
     "row": 8,
     "col": 1,
-    "dataMember": "Customers"
+    "dataSource": "Customers"
   }
 ]
 ```
 
-Le opzioni sono quindi 2:
+Per poter associare le 2 configurazioni ci sono 2 opzioni:
 
 1. Nome della tabella
    Il nome viene associato in fase di creazione della tabella.
-   L'utente potrà cambiarlo tramite il Ribbon (sezione `Table Design`), ma non è presente un evento che intercetti questo cambiamento, rendendo difficile l'aggiornamento dell'associazione.
+   L'utente potrà cambiarlo tramite il Ribbon (sezione `Table Design`), ~~ma non è presente un evento che intercetti questo cambiamento, rendendo difficile l'aggiornamento dell'associazione.~~
+   Gestire il cambio nome con:
+
+   ```js
+   spread.commandManager().addListener('appListener', function (cmd) {
+     console.log(cmd)
+     if (cmd.command.cmd === 'Designer.setTableName') {
+       console.log('table Name Changed')
+     }
+   })
+   ```
+
    Nel caso in cui si vogliano aggiungere N tabelle sullo stesso WorkBook ci sarebbero inoltre dei problemi.
+
    >
+
 2. Riferimento: foglio, riga, colonna (Sheet1!B52)
    Questo riferimento è univoco ma occorre gestire lo spostamento della tabella.
 
    - Drag & drop: occorre gestire l'evento di `DragDropBlockCompleted` in modo da aggiornare i riferimenti con la nuova posizione della tabella.
+
    - Copy & paste: occorre intercettare la copia di una tabella ed aggiornare i riferimenti.
      **Complicato**: all'evento di `ClipboardChanged` occorre capire che cosa si sta copiando (se una tabella o altro). Non semplice.
 
@@ -164,7 +174,7 @@ Le opzioni sono quindi 2:
    Questo secondo caso è necessario se il Designer può definire quali colonne di una tabella del Model verranno visualizzate e se si vuole associare ad esse una formattazione (es. per date / numeri)
    Diversamente le colonne verranno inferite dallo Schema (o dai dati)
 
-   In alternativa, è possibile definire il formato delle celle con SpreadJS: tasto dx > `Format Cells`.
+In alternativa, è possibile definire il formato delle celle con SpreadJS: tasto dx > `Format Cells`.
 
 ```json
 {
@@ -253,7 +263,7 @@ for (let i = 0; i < columnCount; i++) {
 #### Conflitti tra tabelle
 
 Se inserisco 2 o più tabelle dove sono già presenti dei dati mi verrà restituito un errore di tipo "The tables cannot be intersected."
-Questo può succedere a "design-time" (il Configurator inserisce 2 tabelle che collidono) ma anche a runtime (le tabelle hanno un set di dati maggiore di quello previsto dal Configurator e quindi ora collidono)
+Questo può succedere a "design-time" (il Configurator inserisce 2 tabelle che collidono) ma anche a runtime (le tabelle hanno un set di dati maggiore di quello previsto dal Configurator e quindi collidono)
 
 È quindi buona norma evitare di inserire 2 tabelle (delle quali non si conosce il numero di righe a priori) sulle stesse colonne.
 Lo stesso problema si ha su Excel, dove viene sollevato lo stesso errore.
@@ -305,32 +315,13 @@ const jsonOptions = {
 this.wb2?.fromJSON(JSON.parse(jsonStr), jsonOptions)
 ```
 
-##### Caricamento dati Model
-
-Una volta importata la configurazione sarà necessario caricare i dati dal Model Irion.
-Occorrerà quindi:
-
-1.  Estrarre le tabelle salvate nella configurazione Excel (JSON)
-2.  Estrarre dalla configurazione Irion la tabella del Model corrispondente alla tabella Excel
-3.  Leggere i dati e portarli sul WorkBook Excel
-
-##### ⚠️Export tabelle "statiche"
-
-Dettagli sull'export [qui](#import-export)
-
-Decidendo di esportare la configurazione senza i dati (poiché il contenuto delle tabelle verrà caricato all'esecuzione del Book) nel caso in cui vengano definite delle tabelle "statiche" i dati contenuti al loro interno **non verranno esportati**.
-
-Le opzioni sono:
-
-1. Non permettere la creazione di tabelle non associate al Model di Irion (binding)
-2. Sviluppare una funzione che distingua le tabelle "bindate" e quelle "non bindate" salvando i dati di quelle "non bindate" all'interno della configurazione.
-   > Occorre esportare la configurazione Excel 2 volte:
-   >
-   > 1. Con i dati
-   > 2. Senza i dati
-   > 3. Aggiungere all'export "senza dati" il contenuto delle tabelle "statiche"
-
 ---
+
+## [Supporto](https://www.grapecity.com/my-account/my-support)
+
+| User             | Passwd       |
+| ---------------- | ------------ |
+| andreat@irion.it | p**\*\*\***a |
 
 ## ToDo
 
@@ -343,8 +334,22 @@ Le opzioni sono:
 - [x] Manda mail a SpreadJs con:
 
   - C'è un evento che mi consente di intercettare il cambio nome per una tabella?
+    Si:
+
+  ```js
+  spread.commandManager().addListener('appListener', function (cmd) {
+    console.log(cmd)
+    if (cmd.command.cmd === 'Designer.setTableName') {
+      console.log('table Name Changed')
+    }
+  })
+  ```
+
   - Funzionamento del copia e incolla delle tabelle
+    [Vedi ticket](https://www.grapecity.com/my-account/my-support/case/17b8cdf5-07e0-eb11-bacb-0022482182de)
   - Documentazione sul Ribbon?
+    Ad oggi non c'è una documentazione. Guardare l'esempio: https://codesandbox.io/s/spread-js-starter-forked-jf3i4
   - Definizioni dei tipi (TypeScript) per la parte _Designer_
+    Ci stanno lavorando. Al momento non ci sono.
 
 - [ ]
