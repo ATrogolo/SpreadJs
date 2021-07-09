@@ -16,7 +16,7 @@ interface AppState {
 const SERVER_URL = 'https://jsonplaceholder.typicode.com'
 const POSTS_SOURCE = 'posts'
 const USERS_SOURCE = 'users'
-const DELAY = 1000
+const DELAY = 100
 
 class App extends React.Component<any, AppState> {
   hostStyle: any

@@ -2,15 +2,15 @@
 
 ## Requisiti
 
-Mettere a disposizione dei Designer un foglio di calcolo che possa esser personalizzato per poi essere utilizzato per operazioni di reportistica dati da un EndUser.
+Mettere a disposizione dei Designer un foglio di calcolo in modo che venga poi utilizzato da un EndUser per operazioni di analisi dati.
 
-- Ci sono 3 tipologie di utente:
+- Lo SpreadSheet verrà utilizzato da 3 tipi di utenti:
   1. Designer
   2. Configurator
   3. EndUser
 
 Il Designer si occuperà di creare un Book con all'interno un viewer SpreadSheet.
-Imposterà una serie di proprietà (quali ad esempio le tabelle dalle quali lo SpreadSheet potrà attingere i dati ed una serie di Command).
+Imposterà una serie di proprietà (quali ad esempio le tabelle accessibili dal Configurator per visualizzarne i dati nello SpreadSheet ed una serie di Command).
 Questa configurazione verrà salvata nel layout del Book.
 
 Il Configurator utilizzerà quanto messo a disposizione dal Designer ed utilizzerà lo SpreadJsDesigner tool per configurare l'Excel (tabelle, ribbon, stili ...)
@@ -27,17 +27,17 @@ Configura nella property `DataSources` le sorgenti dati accessibili al _Configur
 Ognuna di esse sarà contraddistinta dalle stesse property del tipo _Source_ e da una label che identificherà la _dataSource_ nell'elenco presentato al _Configurator_.
 L'elenco verrà visualizzato in un menù a tendina nel Ribbon e sarà accessibile solo al _Configurator_.
 
-Per ognuno dei _dataSource_ potrà configurare quali colonne visualizzare sullo SpreadSheet indicando, per ognuna di esse:
+Per ognuno dei `dataSource` il Designer potrà configurare quali colonne visualizzare sullo SpreadSheet definendo (opzionalmente):
 
 - Header
 - Formattazione valore (date)
 - Larghezza della colonna
 - Funzione che va a manipolare il valore (Adapter)
 
-Diversamente verranno riportate tutte le colonne lette dal dataMember.
+Diversamente verranno riportate tutte le colonne presenti nel `dataSource`.
 
 Definisce quindi nella property `Buttons` i pulsanti che saranno presenti nel Ribbon.
-Ogni `Button` avrà un nome, un'icona e un'azione da eseguire alla sua selezione.
+Ogni `Button` avrà un nome, un'icona e una o più azioni da eseguire alla sua selezione.
 
 Tramite la property `Configuration` imposterà la tabella nella quale salvare la configurazione dello SpreadSheet.
 Tramite la property `SaveConfig` indicherà il _Command_ che si occuperà di persistere la configurazione su _DataShelf_.
@@ -45,9 +45,9 @@ Tramite la property `SaveConfig` indicherà il _Command_ che si occuperà di per
 #### 2. Configurator
 
 Eseguirà il Book contenente lo SpreadSheet e, tramite il menu a tendina presente nel Ribbon, inserirà le tabelle nello SpreadSheeet.
-Personalizzerà il contenuto dello SpreadSheet ed inserirà stili e formattazioni custom.
+Personalizzerà il contenuto dello SpreadSheet, inserirà stili e formattazioni custom.
 
-Salverà infine quanto realizzato tramite un pulsante presente nel Ribbon che persisterà quanto configurato su _DataShelf_.
+Salverà infine quanto realizzato tramite un pulsante presente nel Ribbon che persisterà la configurazione su _DataShelf_.
 Il _Command_ eseguito per salvare i dati sarà quello indicato dal _Designer_ nella property `SaveConfig`.
 
 #### 3. EndUser
@@ -57,14 +57,14 @@ Eseguirà il Book e potrà visualizzare (e modificare) lo SpreadSheet preparato 
 Nel dettaglio gli step saranno:
 
 - Lettura della configurazione dello SpreadSheet (property `Configuration`)
-- Selezione delle tabelle bindate allo SpreadSheet
-- Lettura delle tabelle (dataDriven)
+- Estrazione delle tabelle bindate allo SpreadSheet
+- Lettura del contenuto delle tabelle (dataDriven)
 - Visualizzazione dei dati
 
-Potrà modificare le tabelle del Model, semplicemente modificando il contenuto delle celle.
-Ogni modifica, se associata ad un dataMember del Model, aggiornerà il dataSet.
+L'EndUser potrà modificare le tabelle del Model, semplicemente modificando il contenuto delle celle.
+Ogni modifica, se associata ad una dataSource, aggiornerà il dataSet.
 
-Potrà inoltre selezionare i `Button` nel Ribbon ed eseguire le azioni associate.
+Potrà inoltre eseguire le azioni messe a disposizione dal Designer tramite i `Button` del Ribbon.
 
 ---
 
@@ -72,9 +72,8 @@ Potrà inoltre selezionare i `Button` nel Ribbon ed eseguire le azioni associate
 
 - La libreria è composta da 2 moduli: un visualizzatore (`SpreadJs`) ed uno strumento per la creazione di fogli Excel (`Designer`) composto dal Ribbon + la parte Excel.
 
-- [Funzionalità libreria](https://www.grapecity.com/spreadjs/demos/quickstart/quickstart-react)
+- [Funzionalità](https://www.grapecity.com/spreadjs/demos/features/workbook/initialization/react)
 - [Dettaglio funzionalità](https://www.grapecity.com/spreadjs/docs/v14/online/features.html)
-
 - [Demo Online Designer](https://www.grapecity.com/spreadjs/designer/index.html)
 
 ```jsx
@@ -136,7 +135,8 @@ Es:
 ```json
 [
   {
-    "name": "table1",
+    "sheet": "Sheet1",
+    "table": "table1",
     "row": 8,
     "col": 1,
     "dataMember": "Customers"
@@ -329,6 +329,8 @@ Le opzioni sono:
    > 1. Con i dati
    > 2. Senza i dati
    > 3. Aggiungere all'export "senza dati" il contenuto delle tabelle "statiche"
+
+---
 
 ## ToDo
 
