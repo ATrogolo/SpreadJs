@@ -34,43 +34,168 @@ class App extends React.Component<any, AppState> {
     }
 
     this.state = {
-      designerMode: false,
+      designerMode: true,
     }
 
     this.ribbonConfig = this.createRibbonConfig()
   }
 
+
+  listTableName= ['costumers','peaple','foods']
+
   createRibbonConfig = () => {
     const config = (GC.Spread.Sheets as any).Designer.DefaultConfig
-    config.commandMap = {
-      saveData: {
-        title: 'Save data to server',
-        text: 'Save',
-        iconClass: 'saveData',
-        bigButton: 'true',
-        commandName: 'saveData',
-        execute: async (context: any, propertyName: any, fontItalicChecked: any) => {
-          const result = this.exportToJson(this.designerWb1)
 
-          console.log('Exported config', result)
-        },
-      },
-    }
-    config.ribbon[0].buttonGroups.push({
-      label: 'Save Data',
-      thumbnailClass: 'ribbon-thumbnail-save',
-      commandGroup: {
-        children: [
-          {
-            direction: 'vertical',
-            commands: ['saveData'],
+    var designer = (GC.Spread.Sheets as any).Designer
+
+    console.log(designer)
+    config.commandMap = {
+      
+      saveData: {
+          title: 'Save data to server',
+          text: 'Save',
+          iconClass: 'saveData',
+          bigButton: 'true',
+          commandName: 'saveData',
+          execute: async (context: any, propertyName: any, fontItalicChecked: any) => {
+            const result = this.exportToJson(this.designerWb1)
+  
+            console.log('Save Action', result)
           },
-        ],
-      },
+        },
+      listTable: {
+        bigButton: true,
+        commandName: "listTable",
+        iconClass: "",
+        subCommands: this.listTableName,
+        length: this.listTableName.length,
+        text: "List Table",
+        title: "List Table",
+        type: "dropdown",
+      }
+    }
+
+    //genero la lista delle tabelle per il ribbon e relative azioni
+    this.generateTableElementForRibbo()
+
+    var exist = false
+    config.ribbon.forEach((element : any) => {
+      if(element.id === 'command'){
+        exist = true
+      }
     })
+
+    if(!exist){
+      config.ribbon.push({
+        buttonGroups: [],
+        id: "command",
+        text: "COMMAND"
+      })
+    }
+    
+    config.ribbon.forEach((element : any) => {
+      var exist = false
+      element.buttonGroups.forEach((element : any) => {
+        if(element.label === 'Save Data'){
+          exist = true
+        }
+      })
+      if(!exist && element.id === 'command'){
+
+        element.buttonGroups.push({
+          label: 'Save Data',
+          thumbnailClass: 'ribbon-thumbnail-save',
+          commandGroup: {
+            children: [
+              {
+                direction: 'vertical',
+                commands: ['saveData'],
+              },
+            ],
+          },
+        },
+        {
+          label: 'Table Bind',
+          thumbnailClass: 'ribbon-thumbnail-viewport',
+          commandGroup: {
+            children: [
+              {
+                direction: 'vertical',
+                commands: ['listTable'],
+              },
+            ],
+          },
+
+        }
+        )
+      }
+    });
+   
 
     return config
   }
+
+  generateTableElementForRibbo(){
+    this.listTableName.forEach(tableName => {
+      const config = (GC.Spread.Sheets as any).Designer.DefaultConfig
+      const nameTable = tableName.toUpperCase()
+      //creo con la formattazione richiesta, un command per il click sul nome tabella 
+      const value = {[tableName]: {
+        title: tableName,
+        text: nameTable,
+        iconClass: 'saveData',
+        bigButton: 'true',
+        commandName: tableName
+         ,
+         execute: async (context: any, propertyName: any, fontItalicChecked: any) => {
+            const result = this.exportToJson(this.designerWb1)
+            //Va agganciata la chiamata con i valori
+            this.addTableConfiguratorMode(POSTS_SOURCE, nameTable)
+            console.log('Table Action', result)
+         },
+      }}
+      
+      config.commandMap = {...config.commandMap, ...value}
+    });
+  }
+
+
+ 
+  addTableConfiguratorMode = (
+    dataSource: string,
+    tableName: string,
+    currentSheet?: GC.Spread.Sheets.Worksheet
+  ) => {
+    const sheet = currentSheet ?? this.designerWb1?.getActiveSheet()
+
+    if (sheet) {
+      this.designerWb1?.suspendPaint()
+      const col = sheet.getActiveColumnIndex()
+      const row = sheet.getActiveRowIndex()
+      this.fetchData(dataSource)
+        .then((json: any[]) => {
+          const data = dataSource === POSTS_SOURCE ? json.slice(0, 2) : json
+          sheet.tables.addFromDataSource(
+            tableName,
+            row,
+            col,
+            data,
+            GC.Spread.Sheets.Tables.TableThemes.medium2
+          )
+
+          this.updateIrionConfig(tableName, row, col, sheet.name(), dataSource)
+        })
+        .catch((error) => {
+          console.error('Le tabelle non possono essere sovrapposte', error)
+          this.designerWb1?.resumePaint()
+
+        })
+        .finally(() => {
+          this.designerWb1?.resumePaint()
+        })
+    }
+  }
+    
 
   render() {
     const { designerMode } = this.state
@@ -196,7 +321,7 @@ class App extends React.Component<any, AppState> {
 
     // WB1 configuration stringified
     const json = JSON.stringify(workbook?.toJSON(serializationOption))
-    console.log('json', json)
+ //   console.log('json', json)
 
     return json
   }
