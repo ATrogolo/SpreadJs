@@ -332,7 +332,8 @@ Le opzioni sono:
 
 ## ToDo
 
-- [ ] Export di tabelle statiche nel JSON di SpreadJs
+- [x] ~~Export di tabelle statiche nel JSON di SpreadJs~~
+      Vengono esportate correttamente (con i dati)
 - [ ] Come configurare il Ribbon
 - [ ] Lettura tabella con la configurazione dal Model
 - [ ] Check su ricaricamento dataMember multipli a fronte del click su un "Button" del Ribbon da parte dell'_EndUser_
@@ -344,5 +345,4 @@ Le opzioni sono:
   - Documentazione sul Ribbon?
   - Definizioni dei tipi (TypeScript) per la parte _Designer_
 
-- [x] ~~Definizione property per salvare la configurazione~~
 - [ ]
