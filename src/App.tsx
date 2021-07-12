@@ -221,7 +221,9 @@ class App extends React.Component<{}, AppState> {
       this.irionConfig.forEach((tableConfig) => {
         const { sheet: sheetName, row, col, dataSource, tableName } = tableConfig
 
-        const sheet = this.wb2?.getSheetFromName(sheetName)
+        const sheet =
+          this.wb2?.getSheetFromName(sheetName) ??
+          this.wb2?.addSheetTab(0, sheetName, GC.Spread.Sheets.SheetType.tableSheet)
         const destTable = sheet?.tables.find(row, col)
 
         if (destTable) {
@@ -255,15 +257,16 @@ class App extends React.Component<{}, AppState> {
           // const rowNumber = data.length
           // const columnNumber = Object.keys(data[0]).length
 
+          const tableUniqueName = tableName + '' + new Date().getTime()
           const table2 = sheet.tables.addFromDataSource(
-            tableName,
+            tableUniqueName,
             row,
             col,
             data,
             GC.Spread.Sheets.Tables.TableThemes.medium2
           )
 
-          this.updateIrionConfig(tableName, row, col, sheet.name(), dataSource)
+          this.updateIrionConfig(tableUniqueName, row, col, sheet.name(), dataSource)
 
           // const table = sheet.tables.add('table2', 0, 0, rowNumber, columnNumber)
           // let column
@@ -320,7 +323,7 @@ class App extends React.Component<{}, AppState> {
 
   updateIrionConfig = (tableName: string, row: number, col: number, sheet: string, dataSource: string) => {
     const index = this.irionConfig.findIndex(
-      (item) => item.row === row && item.col === col && item.tableName === tableName && item.sheet === sheet
+      (item) => item.sheet === sheet && item.row === row && item.col === col // && item.tableName === tableName
     )
     const tableConfig = {
       tableName,
