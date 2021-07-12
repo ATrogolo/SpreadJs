@@ -235,29 +235,6 @@ class App extends React.Component<{}, AppState> {
     }, DELAY)
   }
 
-  fetchData = (dataMember: string) => {
-    return fetch(`${SERVER_URL}/${dataMember}`).then((response) => response.json())
-  }
-
-  updateIrionConfig = (tableName: string, row: number, col: number, sheet: string, dataSource: string) => {
-    const index = this.irionConfig.findIndex(
-      (item) => item.row === row && item.col === col && item.tableName === tableName && item.sheet === sheet
-    )
-    const tableConfig = {
-      tableName,
-      row,
-      col,
-      sheet,
-      dataSource,
-    }
-
-    if (index !== -1) {
-      this.irionConfig[index] = tableConfig
-    } else {
-      this.irionConfig.push(tableConfig)
-    }
-  }
-
   addTable = (
     dataSource: string,
     row: number,
@@ -334,6 +311,29 @@ class App extends React.Component<{}, AppState> {
           this.wb2?.resumePaint()
           this.designerWb1?.resumePaint()
         })
+    }
+  }
+
+  fetchData = (dataMember: string) => {
+    return fetch(`${SERVER_URL}/${dataMember}`).then((response) => response.json())
+  }
+
+  updateIrionConfig = (tableName: string, row: number, col: number, sheet: string, dataSource: string) => {
+    const index = this.irionConfig.findIndex(
+      (item) => item.row === row && item.col === col && item.tableName === tableName && item.sheet === sheet
+    )
+    const tableConfig = {
+      tableName,
+      row,
+      col,
+      sheet,
+      dataSource,
+    }
+
+    if (index !== -1) {
+      this.irionConfig[index] = tableConfig
+    } else {
+      this.irionConfig.push(tableConfig)
     }
   }
 
