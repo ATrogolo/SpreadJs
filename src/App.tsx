@@ -364,7 +364,7 @@ class App extends React.Component<{}, AppState> {
       saveData: {
         title: 'Save data to server',
         text: 'Save',
-        iconClass: 'saveData',
+        iconClass: 'save-icon',
         bigButton: 'true',
         commandName: 'saveData',
         execute: async (context: any, propertyName: any, fontItalicChecked: any) => {
@@ -376,7 +376,7 @@ class App extends React.Component<{}, AppState> {
       listTable: {
         bigButton: true,
         commandName: 'listTable',
-        // iconClass: '',
+        iconClass: 'ribbon-button-table',
         subCommands: DATASOURCES,
         length: DATASOURCES.length,
         text: 'DataSources',
@@ -452,7 +452,7 @@ class App extends React.Component<{}, AppState> {
         [tableName]: {
           title: tableName,
           text: tableName,
-          iconClass: 'datasource',
+          iconClass: 'ribbon-button-table',
           bigButton: false,
           commandName: tableName,
           execute: async (context: any, propertyName: any, fontItalicChecked: any) => {
