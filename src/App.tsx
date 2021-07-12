@@ -14,8 +14,8 @@ interface AppState {
 }
 
 const SERVER_URL = 'https://jsonplaceholder.typicode.com'
-const POSTS_SOURCE = 'posts'
-const USERS_SOURCE = 'users'
+const POSTS_SOURCE = 'Posts'
+const USERS_SOURCE = 'Users'
 const DELAY = 100
 const DATASOURCES = [POSTS_SOURCE, USERS_SOURCE]
 
