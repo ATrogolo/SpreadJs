@@ -168,11 +168,12 @@ Per poter associare le 2 configurazioni ci sono 2 opzioni:
    - Copy & paste: occorre intercettare la copia di una tabella ed aggiornare i riferimenti.
      **Complicato**: all'evento di `ClipboardChanged` occorre capire che cosa si sta copiando (se una tabella o altro). Non semplice.
 
-#### Data-binding
+#### Definizione colonne
 
-1. Uso il binding per associare la definizione di una colonna ai dati:
-   Questo secondo caso è necessario se il Designer può definire quali colonne di una tabella del Model verranno visualizzate e se si vuole associare ad esse una formattazione (es. per date / numeri)
-   Diversamente le colonne verranno inferite dallo Schema (o dai dati)
+Le colonne di un binding tra SpreadSheet e Model possono esser:
+
+1.  Derivate dallo Schema del dataSource
+2.  Definite tramite la property `Columns` della dataSource
 
 In alternativa, è possibile definire il formato delle celle con SpreadJS: tasto dx > `Format Cells`.
 
