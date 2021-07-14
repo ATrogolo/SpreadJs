@@ -22,6 +22,9 @@ const POSTS_SOURCE = 'Posts'
 const USERS_SOURCE = 'Users'
 const DELAY = 100
 const DATASOURCES = [POSTS_SOURCE, USERS_SOURCE]
+const WITH_BINDING = 'With Binding'
+const WITHOUT_BINDING = 'Without Binding'
+const EXPORT_MODE =[WITH_BINDING, WITHOUT_BINDING]
 
 
 
@@ -192,7 +195,7 @@ class App extends React.Component<{}, AppState> {
 
     // WB1 configuration stringified
     const json = JSON.stringify(workbook?.toJSON(serializationOption))
-    //   console.log('json', json)
+    console.log('json', json)
 
     return json
   }
@@ -410,10 +413,23 @@ class App extends React.Component<{}, AppState> {
         title: 'DataSources',
         type: 'dropdown',
       },
+      listExport:{
+        bigButton: true,
+        commandName: 'listExport',
+        iconClass: 'icon-ssjson',
+        subCommands: EXPORT_MODE,
+        length: EXPORT_MODE.length,
+        text: 'Export',
+        title: 'Export',
+        type: 'dropdown',
+      }
     }
 
     //genero la lista delle tabelle per il ribbon e relative azioni
     this.getRibbonTablesDropdown()
+
+    //genero la lista del tipologie d'export per il ribbon e le relative azioni 
+    this.getRibbonExportDropdown()
 
     let exist = false
     config.ribbon.forEach((element: any) => {
@@ -462,12 +478,55 @@ class App extends React.Component<{}, AppState> {
                 },
               ],
             },
+          },
+          {
+            label: 'Export',
+            thumbnailClass: 'ribbon-thumbnail-viewport',
+            commandGroup: {
+              children: [
+                {
+                  direction: 'vertical',
+                  commands: ['listExport'],
+                },
+              ],
+            },
           }
         )
       }
     })
 
     return config
+  }
+
+  getRibbonExportDropdown(){
+    EXPORT_MODE.forEach((exportName) => {
+      const config = (GC.Spread.Sheets as any).Designer.DefaultConfig
+
+      //creo con la formattazione richiesta, un command per il click sul nome tabella
+      const value = {
+        [exportName]: {
+          title: exportName,
+          text: exportName,
+          iconClass: 'icon-ssjson',
+          bigButton: false,
+          commandName: exportName,
+          execute: async (context: any, propertyName: any, fontItalicChecked: any) => {
+            
+            if(exportName === WITHOUT_BINDING ){
+              //da configurare
+              this.exportToJson(this.designerWb1)
+            }
+            if(exportName === WITH_BINDING){
+              //da configurare
+              this.exportToJson(this.designerWb1)
+            }
+
+          },
+        },
+      }
+
+      config.commandMap = { ...config.commandMap, ...value }
+    })
   }
 
   getRibbonTablesDropdown() {
@@ -488,7 +547,7 @@ class App extends React.Component<{}, AppState> {
             if (sheet) {
               const row = sheet.getActiveRowIndex()
               const col = sheet.getActiveColumnIndex()
-              this.showModal()
+              //this.showModal()
 
               this.addTable(tableName, row, col, tableName, sheet)
               
