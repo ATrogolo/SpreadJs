@@ -8,9 +8,13 @@ import '@grapecity/spread-sheets-designer/styles/gc.spread.sheets.designer.min.c
 import '@grapecity/spread-sheets/styles/gc.spread.sheets.excel2013white.css'
 
 import './App.css'
+import { Modal } from './Modal'
+import { throws } from 'assert'
+
 
 interface AppState {
-  designerMode: boolean
+  designerMode: boolean,
+  show: boolean
 }
 
 const SERVER_URL = 'https://jsonplaceholder.typicode.com'
@@ -18,6 +22,8 @@ const POSTS_SOURCE = 'Posts'
 const USERS_SOURCE = 'Users'
 const DELAY = 100
 const DATASOURCES = [POSTS_SOURCE, USERS_SOURCE]
+
+
 
 class App extends React.Component<{}, AppState> {
   hostStyle: any
@@ -36,10 +42,24 @@ class App extends React.Component<{}, AppState> {
 
     this.state = {
       designerMode: true,
+      show: false,
     }
 
     this.ribbonConfig = this.getRibbonConfig()
   }
+
+  showModal = () => {
+    this.setState({ show: true });
+  };
+
+  hideModal = () => {
+    this.setState({ show: false });
+    this.getRibbonTablesDropdown();
+  };
+
+  
+
+
 
   render() {
     const { designerMode } = this.state
@@ -76,7 +96,9 @@ class App extends React.Component<{}, AppState> {
               sheet?.setValue(1, 1, 'Type something here!')
             }}
             config={this.ribbonConfig}
-          ></Designer>
+          >
+
+          </Designer>
         )) || (
           <>
             <SpreadSheets
@@ -95,6 +117,11 @@ class App extends React.Component<{}, AppState> {
             ></SpreadSheets>
           </>
         )}
+
+          <Modal show={this.state.show} onClose={this.hideModal} >
+              <p>Modal</p>
+          </Modal>
+
       </>
     )
   }
@@ -461,8 +488,10 @@ class App extends React.Component<{}, AppState> {
             if (sheet) {
               const row = sheet.getActiveRowIndex()
               const col = sheet.getActiveColumnIndex()
+              this.showModal()
 
               this.addTable(tableName, row, col, tableName, sheet)
+              
             }
           },
         },
