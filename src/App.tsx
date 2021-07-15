@@ -9,11 +9,9 @@ import '@grapecity/spread-sheets/styles/gc.spread.sheets.excel2013white.css'
 
 import './App.css'
 import { Modal } from './Modal'
-import { throws } from 'assert'
-
 
 interface AppState {
-  designerMode: boolean,
+  designerMode: boolean
   show: boolean
 }
 
@@ -22,8 +20,6 @@ const POSTS_SOURCE = 'Posts'
 const USERS_SOURCE = 'Users'
 const DELAY = 100
 const DATASOURCES = [POSTS_SOURCE, USERS_SOURCE]
-
-
 
 class App extends React.Component<{}, AppState> {
   hostStyle: any
@@ -49,17 +45,13 @@ class App extends React.Component<{}, AppState> {
   }
 
   showModal = () => {
-    this.setState({ show: true });
-  };
+    this.setState({ show: true })
+  }
 
   hideModal = () => {
-    this.setState({ show: false });
-    this.getRibbonTablesDropdown();
-  };
-
-  
-
-
+    this.setState({ show: false })
+    this.getRibbonTablesDropdown()
+  }
 
   render() {
     const { designerMode } = this.state
@@ -94,11 +86,21 @@ class App extends React.Component<{}, AppState> {
 
               const sheet = this.designerWb1?.getActiveSheet()
               sheet?.setValue(1, 1, 'Type something here!')
+
+              this.designerWb1?.bind(
+                GC.Spread.Sheets.Events.ButtonClicked,
+                function (sender: any, args: GC.Spread.Sheets.IButtonClickedEventArgs) {
+                  const { sheet, row, col, sheetName, sheetArea } = args
+
+                  const cellType = sheet.getCellType(row, col)
+                  if (cellType instanceof GC.Spread.Sheets.CellTypes.Button) {
+                    alert('Button Clicked')
+                  }
+                }
+              )
             }}
             config={this.ribbonConfig}
-          >
-
-          </Designer>
+          ></Designer>
         )) || (
           <>
             <SpreadSheets
@@ -118,10 +120,9 @@ class App extends React.Component<{}, AppState> {
           </>
         )}
 
-          <Modal show={this.state.show} onClose={this.hideModal} >
-              <p>Modal</p>
-          </Modal>
-
+        <Modal show={this.state.show} onClose={this.hideModal}>
+          <p>Modal</p>
+        </Modal>
       </>
     )
   }
@@ -192,7 +193,7 @@ class App extends React.Component<{}, AppState> {
 
     // WB1 configuration stringified
     const json = JSON.stringify(workbook?.toJSON(serializationOption))
-    //   console.log('json', json)
+    console.log('json', json)
 
     return json
   }
@@ -220,7 +221,7 @@ class App extends React.Component<{}, AppState> {
 
     // FromJson
     // this.wb2?.fromJSON(JSON.parse(jsonStr))
-    this.wb2?.fromJSON(JSON.parse(jsonStr), jsonOptions)
+    this.wb2?.fromJSON(JSON.parse(jsonStr))
 
     setTimeout(() => {
       // const config: any = JSON.parse(jsonStr)
@@ -248,7 +249,7 @@ class App extends React.Component<{}, AppState> {
       this.irionConfig.forEach((tableConfig) => {
         const { sheet: sheetName, row, col, dataSource, tableName } = tableConfig
 
-        const sheet =
+        const sheet: GC.Spread.Sheets.Worksheet =
           this.wb2?.getSheetFromName(sheetName) ??
           this.wb2?.addSheetTab(0, sheetName, GC.Spread.Sheets.SheetType.tableSheet)
         const destTable = sheet?.tables.find(row, col)
@@ -281,23 +282,33 @@ class App extends React.Component<{}, AppState> {
       this.fetchData(dataSource)
         .then((json: any[]) => {
           const data = dataSource === POSTS_SOURCE ? json.slice(0, 2) : json
-          // const rowNumber = data.length
-          // const columnNumber = Object.keys(data[0]).length
+
+          const rowNumber = data.length
+          const columnNames = Object.keys(data[0])
+          const columnNumber = columnNames.length
 
           const tableUniqueName = tableName + '' + new Date().getTime()
-          const table2 = sheet.tables.addFromDataSource(
-            tableUniqueName,
-            row,
-            col,
-            data,
-            GC.Spread.Sheets.Tables.TableThemes.medium2
-          )
+          // const table2 = sheet.tables.addFromDataSource(
+          //   tableUniqueName,
+          //   row,
+          //   col,
+          //   data,
+          //   GC.Spread.Sheets.Tables.TableThemes.medium2
+          // )
 
-          this.updateIrionConfig(tableUniqueName, row, col, sheet.name(), dataSource)
+          // this.updateIrionConfig(tableUniqueName, row, col, sheet.name(), dataSource)
 
-          // const table = sheet.tables.add('table2', 0, 0, rowNumber, columnNumber)
+          const table = sheet.tables.add(tableUniqueName, row, col, rowNumber, columnNumber)
+          console.log('sto inserendo la tabella ', tableUniqueName)
+
           // let column
-          // const columns = []
+          const columns: any[] = []
+          columnNames.forEach((columnName, index) => {
+            const column = new GC.Spread.Sheets.Tables.TableColumn(index, columnName)
+
+            columns.push(column)
+          })
+
           // column = new GC.Spread.Sheets.Tables.TableColumn(
           //   1,
           //   'userId',
@@ -324,8 +335,8 @@ class App extends React.Component<{}, AppState> {
           // column = new GC.Spread.Sheets.Tables.TableColumn(4, 'body', 'Post')
           // columns.push(column)
 
-          // table.autoGenerateColumns(false)
-          // table.bind(columns, '', data)
+          table.autoGenerateColumns(false)
+          table.bind(columns, '', data)
 
           // this.fitColumns(sheet, columnNumber)
         })
@@ -488,10 +499,9 @@ class App extends React.Component<{}, AppState> {
             if (sheet) {
               const row = sheet.getActiveRowIndex()
               const col = sheet.getActiveColumnIndex()
-              this.showModal()
+              // this.showModal()
 
               this.addTable(tableName, row, col, tableName, sheet)
-              
             }
           },
         },
@@ -520,34 +530,34 @@ class App extends React.Component<{}, AppState> {
       }
     )
 
-    sheet.bind(GC.Spread.Sheets.Events.EditEnded, (sender: any, args: GC.Spread.Sheets.IEditEndedEventArgs) => {
-      const { row, col } = args
-      console.log('Cell (' + row + ', ' + col + ') data has been changed.')
+    // sheet.bind(GC.Spread.Sheets.Events.EditEnded, (sender: any, args: GC.Spread.Sheets.IEditEndedEventArgs) => {
+    //   const { row, col } = args
+    //   console.log('Cell (' + row + ', ' + col + ') data has been changed.')
 
-      const table = sheet.tables.find(row, col)
-      if (table) {
-        const tableName = table.name()
-        const index = this.irionConfig.findIndex((item) => item.tableName === tableName && item.sheet === sheet.name())
+    //   const table = sheet.tables.find(row, col)
+    //   if (table) {
+    //     const tableName = table.name()
+    //     const index = this.irionConfig.findIndex((item) => item.tableName === tableName && item.sheet === sheet.name())
 
-        if (index !== -1) {
-          // Found
-          const { dataSource } = this.irionConfig[index]
+    //     if (index !== -1) {
+    //       // Found
+    //       const { dataSource } = this.irionConfig[index]
 
-          const rowsChanged = table.getDirtyRows() ?? []
-          const rowChanged = rowsChanged.slice(-1)?.[0]?.item
-          const key = rowChanged['id'] // Read primary key from layout config
+    //       const rowsChanged = table.getDirtyRows() ?? []
+    //       const rowChanged = rowsChanged.slice(-1)?.[0]?.item
+    //       const key = rowChanged['id'] // Read primary key from layout config
 
-          // Update rowChanged to the Model
-          fetch(`${SERVER_URL}/${dataSource}/${key}`, {
-            method: 'PATCH',
-            body: JSON.stringify(rowChanged),
-            headers: {
-              'Content-type': 'application/json; charset=UTF-8',
-            },
-          })
-        }
-      }
-    })
+    //       // Update rowChanged to the Model
+    //       fetch(`${SERVER_URL}/${dataSource}/${key}`, {
+    //         method: 'PATCH',
+    //         body: JSON.stringify(rowChanged),
+    //         headers: {
+    //           'Content-type': 'application/json; charset=UTF-8',
+    //         },
+    //       })
+    //     }
+    //   }
+    // })
 
     sheet.bind(
       GC.Spread.Sheets.Events.ClipboardChanged,
