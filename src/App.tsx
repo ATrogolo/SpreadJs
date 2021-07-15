@@ -9,10 +9,13 @@ import '@grapecity/spread-sheets/styles/gc.spread.sheets.excel2013white.css'
 
 import './App.css'
 import { Modal } from './Modal'
+import { ModalCommandConfigurator } from './ModalCommandConfigurator'
 
 interface AppState {
   designerMode: boolean
   show: boolean
+  showModalConfigurator:boolean,
+  
 }
 
 const SERVER_URL = 'https://jsonplaceholder.typicode.com'
@@ -42,6 +45,7 @@ class App extends React.Component<{}, AppState> {
     this.state = {
       designerMode: true,
       show: false,
+      showModalConfigurator:false,
     }
 
     this.ribbonConfig = this.getRibbonConfig()
@@ -54,6 +58,16 @@ class App extends React.Component<{}, AppState> {
   hideModal = () => {
     this.setState({ show: false })
     this.getRibbonTablesDropdown()
+  }
+
+
+  showModalConfigurator = () => {
+    this.setState({ show: true })
+  }
+
+  hideModalConfigurator = () => {
+    this.setState({ show: false })
+    
   }
 
   render() {
@@ -92,12 +106,12 @@ class App extends React.Component<{}, AppState> {
 
               this.designerWb1?.bind(
                 GC.Spread.Sheets.Events.ButtonClicked,
-                function (sender: any, args: GC.Spread.Sheets.IButtonClickedEventArgs) {
+                 (sender: any, args: GC.Spread.Sheets.IButtonClickedEventArgs) => {
                   const { sheet, row, col, sheetName, sheetArea } = args
 
                   const cellType = sheet.getCellType(row, col)
                   if (cellType instanceof GC.Spread.Sheets.CellTypes.Button) {
-                    alert('Button Clicked')
+                    this.showModalConfigurator();
                   }
                 }
               )
@@ -126,6 +140,10 @@ class App extends React.Component<{}, AppState> {
         <Modal show={this.state.show} onClose={this.hideModal}>
           <p>Modal</p>
         </Modal>
+
+        <ModalCommandConfigurator showModalConfigurator={this.state.showModalConfigurator} onClose={this.hideModalConfigurator}>
+          <p>Modal</p>
+        </ModalCommandConfigurator>
       </>
     )
   }
@@ -195,10 +213,32 @@ class App extends React.Component<{}, AppState> {
     }
 
     // WB1 configuration stringified
-    const json = JSON.stringify(workbook?.toJSON(serializationOption))
-    console.log('json', json)
+    const json = workbook?.toJSON(serializationOption)
+    const exportJson = {"spreadJS": {...json}}
+    console.log('json', exportJson)
 
-    return json
+    return exportJson
+  }
+
+
+  exportConfig = (workbook?: GC.Spread.Sheets.Workbook) => {
+    const serializationOption = {
+      // includeBindingSource: true, // include binding source when converting the workbook to json, default value is false
+      // ignoreStyle: false, // ignore styles when converting workbook to json, default value is false
+      // ignoreFormula: true, // ignore formulas when converting workbook to json, default value is false
+      // saveAsView: true, //include the format string formatting result when converting workbook to json, default value is false
+      // rowHeadersAsFrozenColumns: true, // treat row headers as frozen columns when converting workbook to json, default value is false
+      // columnHeadersAsFrozenRows: true, // treat column headers as frozen rows when converting workbook to json, default value is false
+      // includeAutoMergedCells: true, // include the automatically merged cells to the real merged cells when converting the workbook to json.
+    }
+
+    // WB1 configuration stringified
+    const json = workbook?.toJSON(serializationOption)
+    
+    const exportConfing = {"spreadJS": {...json}, "irionConfi": {...this.irionConfig}}
+    console.log('json', exportConfing)
+
+    return exportConfing
   }
 
   exportToWB2 = () => {
@@ -224,7 +264,7 @@ class App extends React.Component<{}, AppState> {
 
     // FromJson
     // this.wb2?.fromJSON(JSON.parse(jsonStr))
-    this.wb2?.fromJSON(JSON.parse(jsonStr))
+    this.wb2?.fromJSON(JSON.parse(JSON.stringify(jsonStr)))
 
     setTimeout(() => {
       // const config: any = JSON.parse(jsonStr)
@@ -399,6 +439,8 @@ class App extends React.Component<{}, AppState> {
   }
 
   getRibbonConfig = () => {
+    // const config1 = (GC.Spread.Sheets as any).Designer  
+    // config1.getCommand().cellType.subCommands.push("commandWindosButtonConfiguration")
     const config = (GC.Spread.Sheets as any).Designer.DefaultConfig
 
     config.commandMap = {
@@ -441,6 +483,8 @@ class App extends React.Component<{}, AppState> {
 
     //genero la lista del tipologie d'export per il ribbon e le relative azioni 
     this.getRibbonExportDropdown()
+
+    // this.prova()
 
     let exist = false
     config.ribbon.forEach((element: any) => {
@@ -509,6 +553,22 @@ class App extends React.Component<{}, AppState> {
     return config
   }
 
+  // prova(){
+
+  //     //creo con la formattazione richiesta, un command per il click sul nome tabella
+  //     const config = (GC.Spread.Sheets as any).Designer
+  //     const value = {
+  //    "commandWindosButtonConfiguration":{
+  //       commandName: "commandWindosButtonConfiguration",
+  //       iconClass: "ribbon-button-buttonlistcelltype",
+  //       text: "Button List"
+  //     }
+  //   }
+  //     config.commandMap = { ...config.commandMap, ...value }
+ 
+  // }
+
+
   getRibbonExportDropdown(){
     EXPORT_MODE.forEach((exportName) => {
       const config = (GC.Spread.Sheets as any).Designer.DefaultConfig
@@ -525,11 +585,12 @@ class App extends React.Component<{}, AppState> {
             
             if(exportName === WITHOUT_BINDING ){
               //da configurare
-              this.exportToJson(this.designerWb1)
+              
+              navigator.clipboard.writeText(JSON.stringify(this.exportToJson(this.designerWb1)))
             }
             if(exportName === WITH_BINDING){
               //da configurare
-              this.exportToJson(this.designerWb1)
+              navigator.clipboard.writeText(JSON.stringify(this.exportConfig(this.designerWb1)))
             }
 
           },
