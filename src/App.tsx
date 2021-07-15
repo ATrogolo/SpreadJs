@@ -14,8 +14,7 @@ import { ModalCommandConfigurator } from './ModalCommandConfigurator'
 interface AppState {
   designerMode: boolean
   show: boolean
-  showModalConfigurator:boolean,
-  
+  showModalConfigurator: boolean
 }
 
 const SERVER_URL = 'https://jsonplaceholder.typicode.com'
@@ -25,7 +24,7 @@ const DELAY = 100
 const DATASOURCES = [POSTS_SOURCE, USERS_SOURCE]
 const WITH_BINDING = 'With Binding'
 const WITHOUT_BINDING = 'Without Binding'
-const EXPORT_MODE =[WITH_BINDING, WITHOUT_BINDING]
+const EXPORT_MODE = [WITH_BINDING, WITHOUT_BINDING]
 
 class App extends React.Component<{}, AppState> {
   hostStyle: any
@@ -45,7 +44,7 @@ class App extends React.Component<{}, AppState> {
     this.state = {
       designerMode: true,
       show: false,
-      showModalConfigurator:false,
+      showModalConfigurator: false,
     }
 
     this.ribbonConfig = this.getRibbonConfig()
@@ -60,14 +59,12 @@ class App extends React.Component<{}, AppState> {
     this.getRibbonTablesDropdown()
   }
 
-
   showModalConfigurator = () => {
     this.setState({ show: true })
   }
 
   hideModalConfigurator = () => {
     this.setState({ show: false })
-    
   }
 
   render() {
@@ -88,7 +85,7 @@ class App extends React.Component<{}, AppState> {
               <button className="export-config" onClick={this.exportToWB2}>
                 Export WB1 to WB2
               </button>
-              <button className="add-table" onClick={() => this.addTable(POSTS_SOURCE, 15, 1, 'table2')}>
+              <button className="add-table" onClick={() => this.setTable(POSTS_SOURCE, 15, 1, 'table2')}>
                 Add table (1,1)
               </button>
             </>
@@ -98,24 +95,7 @@ class App extends React.Component<{}, AppState> {
         {(designerMode && (
           <Designer
             styleInfo={{ width: '100%', height: '100vh' }}
-            designerInitialized={(designer: any) => {
-              this.designerWb1 = designer.getWorkbook()
-
-              const sheet = this.designerWb1?.getActiveSheet()
-              sheet?.setValue(1, 1, 'Type something here!')
-
-              this.designerWb1?.bind(
-                GC.Spread.Sheets.Events.ButtonClicked,
-                 (sender: any, args: GC.Spread.Sheets.IButtonClickedEventArgs) => {
-                  const { sheet, row, col, sheetName, sheetArea } = args
-
-                  const cellType = sheet.getCellType(row, col)
-                  if (cellType instanceof GC.Spread.Sheets.CellTypes.Button) {
-                    this.showModalConfigurator();
-                  }
-                }
-              )
-            }}
+            designerInitialized={(designer: any) => this.initDesigner(designer.getWorkbook())}
             config={this.ribbonConfig}
           ></Designer>
         )) || (
@@ -141,7 +121,10 @@ class App extends React.Component<{}, AppState> {
           <p>Modal</p>
         </Modal>
 
-        <ModalCommandConfigurator showModalConfigurator={this.state.showModalConfigurator} onClose={this.hideModalConfigurator}>
+        <ModalCommandConfigurator
+          showModalConfigurator={this.state.showModalConfigurator}
+          onClose={this.hideModalConfigurator}
+        >
           <p>Modal</p>
         </ModalCommandConfigurator>
       </>
@@ -156,18 +139,18 @@ class App extends React.Component<{}, AppState> {
     this.bindEvents()
 
     // Status Bar
-    workBook.suspendPaint()
-    const statusBarElement = document.getElementById('statusBar')
-    if (statusBarElement) {
-      const statusBar = new GC.Spread.Sheets.StatusBar.StatusBar(statusBarElement)
-      statusBar.bind(workBook)
-    }
-    workBook.resumePaint()
+    // workBook.suspendPaint()
+    // const statusBarElement = document.getElementById('statusBar')
+    // if (statusBarElement) {
+    //   const statusBar = new GC.Spread.Sheets.StatusBar.StatusBar(statusBarElement)
+    //   statusBar.bind(workBook)
+    // }
+    // workBook.resumePaint()
 
-    //initialize the spread
-    workBook.suspendPaint()
+    // //initialize the spread
+    // workBook.suspendPaint()
     //Setting Values - Text
-    const shiftRow = 14
+    // const shiftRow = 14
     // sheet.setValue(shiftRow + 1, 1, 'Setting Values')
     // //Setting Values - Number
     // sheet.setValue(shiftRow + 2, 1, 'Number')
@@ -190,15 +173,31 @@ class App extends React.Component<{}, AppState> {
 
     // sheet.getRange(shiftRow + 3, 1, 1, 2).backColor('rgb(211, 211, 211)')
 
-    this.fetchData(USERS_SOURCE).then((data: any[]) => {
-      sheet.tables.addFromDataSource('table1', 1, 1, data, GC.Spread.Sheets.Tables.TableThemes.medium2)
-      this.updateIrionConfig('table1', 1, 1, sheet.name(), USERS_SOURCE)
-      workBook.resumePaint()
-    })
+    this.setTable(USERS_SOURCE, 1, 1, 'table1', sheet)
+    workBook.resumePaint()
   }
 
   initSpread2(workBook: GC.Spread.Sheets.Workbook) {
     this.wb2 = workBook
+  }
+
+  initDesigner(workBook: GC.Spread.Sheets.Workbook) {
+    this.designerWb1 = workBook
+
+    const sheet = this.designerWb1?.getActiveSheet()
+    sheet?.setValue(1, 1, 'Type something here!')
+
+    this.designerWb1?.bind(
+      GC.Spread.Sheets.Events.ButtonClicked,
+      (sender: any, args: GC.Spread.Sheets.IButtonClickedEventArgs) => {
+        const { sheet, row, col, sheetName, sheetArea } = args
+
+        const cellType = sheet.getCellType(row, col)
+        if (cellType instanceof GC.Spread.Sheets.CellTypes.Button) {
+          this.showModalConfigurator()
+        }
+      }
+    )
   }
 
   exportToJson = (workbook?: GC.Spread.Sheets.Workbook) => {
@@ -214,12 +213,11 @@ class App extends React.Component<{}, AppState> {
 
     // WB1 configuration stringified
     const json = workbook?.toJSON(serializationOption)
-    const exportJson = {"spreadJS": {...json}}
+    const exportJson = { spreadJS: { ...json } }
     console.log('json', exportJson)
 
     return exportJson
   }
-
 
   exportConfig = (workbook?: GC.Spread.Sheets.Workbook) => {
     const serializationOption = {
@@ -234,8 +232,8 @@ class App extends React.Component<{}, AppState> {
 
     // WB1 configuration stringified
     const json = workbook?.toJSON(serializationOption)
-    
-    const exportConfing = {"spreadJS": {...json}, "irionConfi": {...this.irionConfig}}
+
+    const exportConfing = { spreadJS: { ...json }, irionConfi: { ...this.irionConfig } }
     console.log('json', exportConfing)
 
     return exportConfing
@@ -267,48 +265,20 @@ class App extends React.Component<{}, AppState> {
     this.wb2?.fromJSON(JSON.parse(JSON.stringify(jsonStr)))
 
     setTimeout(() => {
-      // const config: any = JSON.parse(jsonStr)
-      // const sheetsKeys = Object.keys(config.sheets)
-
-      // sheetsKeys.forEach((sheetKey) => {
-      //   const sheet = config.sheets[sheetKey]
-
-      //   const sheetName = sheet.name
-
-      //   for (let table of sheet.tables) {
-      //     const { name, row, col } = table
-
-      //     const sheet = this.wb2?.getSheetFromName(sheetName)
-      //     const destTable = sheet?.tables.find(row, col)
-
-      //     if (destTable) {
-      //       // remove
-      //       sheet?.tables.remove(destTable, GC.Spread.Sheets.Tables.TableRemoveOptions.none)
-      //     }
-      //     // fetch data
-      //     this.addTable(sheet, row, col, destTable?.name())
-      //   }
-      // })
       this.irionConfig.forEach((tableConfig) => {
         const { sheet: sheetName, row, col, dataSource, tableName } = tableConfig
 
         const sheet: GC.Spread.Sheets.Worksheet =
           this.wb2?.getSheetFromName(sheetName) ??
           this.wb2?.addSheetTab(0, sheetName, GC.Spread.Sheets.SheetType.tableSheet)
-        const destTable = sheet?.tables.find(row, col)
 
-        if (destTable) {
-          // Remove it
-          sheet?.tables.remove(destTable, GC.Spread.Sheets.Tables.TableRemoveOptions.none)
-        }
-
-        // Insert table
-        this.addTable(dataSource, row, col, tableName, sheet)
+        // Insert (import) table
+        this.setTable(dataSource, row, col, tableName, sheet)
       })
     }, DELAY)
   }
 
-  addTable = (
+  setTable = (
     dataSource: string,
     row: number,
     col: number,
@@ -330,7 +300,6 @@ class App extends React.Component<{}, AppState> {
           const columnNames = Object.keys(data[0])
           const columnNumber = columnNames.length
 
-          const tableUniqueName = tableName + '' + new Date().getTime()
           // const table2 = sheet.tables.addFromDataSource(
           //   tableUniqueName,
           //   row,
@@ -339,10 +308,17 @@ class App extends React.Component<{}, AppState> {
           //   GC.Spread.Sheets.Tables.TableThemes.medium2
           // )
 
-          // this.updateIrionConfig(tableUniqueName, row, col, sheet.name(), dataSource)
+          let table = sheet.tables.find(row, col)
+          if (table == null) {
+            const tableUniqueName = tableName + '_' + new Date().getTime()
+            table = sheet.tables.add(tableUniqueName, row, col, rowNumber, columnNumber)
 
-          const table = sheet.tables.add(tableUniqueName, row, col, rowNumber, columnNumber)
-          console.log('sto inserendo la tabella ', tableUniqueName)
+            console.log('Sto inserendo la tabella ', tableUniqueName)
+          } else {
+            console.warn(
+              'La tabella è già definita nel foglio. Probabilmente è stata importata una configurazione precedente'
+            )
+          }
 
           // let column
           const columns: any[] = []
@@ -351,16 +327,6 @@ class App extends React.Component<{}, AppState> {
 
             columns.push(column)
           })
-
-          // column = new GC.Spread.Sheets.Tables.TableColumn(
-          //   1,
-          //   'userId',
-          //   'UserID',
-          //   undefined,
-          //   new GC.Spread.Sheets.CellTypes.Text(),
-          //   (item: any) => '#' + item['userId']
-          // )
-          // columns.push(column)
 
           // column = new GC.Spread.Sheets.Tables.TableColumn(
           //   2,
@@ -372,15 +338,10 @@ class App extends React.Component<{}, AppState> {
           // )
           // columns.push(column)
 
-          // column = new GC.Spread.Sheets.Tables.TableColumn(3, 'title', 'Title')
-          // columns.push(column)
-
-          // column = new GC.Spread.Sheets.Tables.TableColumn(4, 'body', 'Post')
-          // columns.push(column)
-
           table.autoGenerateColumns(false)
           table.bind(columns, '', data)
 
+          this.updateIrionConfig(table.name(), row, col, sheet.name(), dataSource)
           // this.fitColumns(sheet, columnNumber)
         })
         .catch((error) => {
@@ -439,7 +400,7 @@ class App extends React.Component<{}, AppState> {
   }
 
   getRibbonConfig = () => {
-    // const config1 = (GC.Spread.Sheets as any).Designer  
+    // const config1 = (GC.Spread.Sheets as any).Designer
     // config1.getCommand().cellType.subCommands.push("commandWindosButtonConfiguration")
     const config = (GC.Spread.Sheets as any).Designer.DefaultConfig
 
@@ -466,7 +427,7 @@ class App extends React.Component<{}, AppState> {
         title: 'DataSources',
         type: 'dropdown',
       },
-      listExport:{
+      listExport: {
         bigButton: true,
         commandName: 'listExport',
         iconClass: 'icon-ssjson',
@@ -475,13 +436,13 @@ class App extends React.Component<{}, AppState> {
         text: 'Export',
         title: 'Export',
         type: 'dropdown',
-      }
+      },
     }
 
     //genero la lista delle tabelle per il ribbon e relative azioni
     this.getRibbonTablesDropdown()
 
-    //genero la lista del tipologie d'export per il ribbon e le relative azioni 
+    //genero la lista del tipologie d'export per il ribbon e le relative azioni
     this.getRibbonExportDropdown()
 
     // this.prova()
@@ -565,11 +526,10 @@ class App extends React.Component<{}, AppState> {
   //     }
   //   }
   //     config.commandMap = { ...config.commandMap, ...value }
- 
+
   // }
 
-
-  getRibbonExportDropdown(){
+  getRibbonExportDropdown() {
     EXPORT_MODE.forEach((exportName) => {
       const config = (GC.Spread.Sheets as any).Designer.DefaultConfig
 
@@ -582,17 +542,15 @@ class App extends React.Component<{}, AppState> {
           bigButton: false,
           commandName: exportName,
           execute: async (context: any, propertyName: any, fontItalicChecked: any) => {
-            
-            if(exportName === WITHOUT_BINDING ){
+            if (exportName === WITHOUT_BINDING) {
               //da configurare
-              
+
               navigator.clipboard.writeText(JSON.stringify(this.exportToJson(this.designerWb1)))
             }
-            if(exportName === WITH_BINDING){
+            if (exportName === WITH_BINDING) {
               //da configurare
               navigator.clipboard.writeText(JSON.stringify(this.exportConfig(this.designerWb1)))
             }
-
           },
         },
       }
@@ -621,7 +579,7 @@ class App extends React.Component<{}, AppState> {
               const col = sheet.getActiveColumnIndex()
               //this.showModal()
 
-              this.addTable(tableName, row, col, tableName, sheet)
+              this.setTable(tableName, row, col, tableName, sheet)
             }
           },
         },
