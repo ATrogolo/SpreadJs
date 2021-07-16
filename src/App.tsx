@@ -11,6 +11,7 @@ import './App.css'
 import { Modal } from './Modal'
 import { ModalCommandConfigurator } from './ModalCommandConfigurator'
 
+
 interface AppState {
   designerMode: boolean
   show: boolean
@@ -33,6 +34,7 @@ class App extends React.Component<{}, AppState> {
   designerWb1: GC.Spread.Sheets.Workbook | undefined
   ribbonConfig: any
   irionConfig: { tableName: string; row: number; col: number; sheet: string; dataSource: string }[] = []
+  fbx: any
 
   constructor(props: {}) {
     super(props)
@@ -48,6 +50,7 @@ class App extends React.Component<{}, AppState> {
     }
 
     this.ribbonConfig = this.getRibbonConfig()
+    this.fbx = null;
   }
 
   showModal = () => {
@@ -60,12 +63,17 @@ class App extends React.Component<{}, AppState> {
   }
 
   showModalConfigurator = () => {
-    this.setState({ show: true })
+    this.setState({ showModalConfigurator: true })
   }
 
   hideModalConfigurator = () => {
-    this.setState({ show: false })
+    this.setState({ showModalConfigurator: false })
   }
+
+  getSelectedRangeFormula (e:any) {
+    const a = document.getElementById('rangeText')!
+    a.textContent = this.fbx.text();
+}
 
   render() {
     const { designerMode } = this.state
@@ -93,6 +101,7 @@ class App extends React.Component<{}, AppState> {
         </div>
 
         {(designerMode && (
+          
           <Designer
             styleInfo={{ width: '100%', height: '100vh' }}
             designerInitialized={(designer: any) => this.initDesigner(designer.getWorkbook())}
@@ -124,9 +133,11 @@ class App extends React.Component<{}, AppState> {
         <ModalCommandConfigurator
           showModalConfigurator={this.state.showModalConfigurator}
           onClose={this.hideModalConfigurator}
+          designerMode={this.state.designerMode}
+          getSelectedRangeFormula={(e:any)=>{this.getSelectedRangeFormula(e)}}
         >
-          <p>Modal</p>
         </ModalCommandConfigurator>
+     
       </>
     )
   }
@@ -198,6 +209,10 @@ class App extends React.Component<{}, AppState> {
         }
       }
     )
+    const elementFormulaBar = document.getElementById('formulaBar')!
+    var fbx = new GC.Spread.Sheets.FormulaTextBox.FormulaTextBox(elementFormulaBar,{rangeSelectMode: true, absoluteReference: false});
+    fbx.workbook(workBook);
+    this.fbx = fbx;
   }
 
   exportToJson = (workbook?: GC.Spread.Sheets.Workbook) => {
