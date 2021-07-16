@@ -137,7 +137,7 @@ class App extends React.Component<{}, AppState> {
           getSelectedRangeFormula={(e:any)=>{this.getSelectedRangeFormula(e)}}
         >
         </ModalCommandConfigurator>
-     
+        <div id ='formulaBar'></div>
       </>
     )
   }
