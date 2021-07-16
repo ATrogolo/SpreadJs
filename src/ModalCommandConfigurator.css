@@ -1,0 +1,157 @@
+.modal {
+    
+    position: fixed; 
+    z-index: 1;
+    /* left: 0;
+    top: 0;
+    width: 100%; 
+    height: 100%; */
+    left: 40%;
+    top:28%;
+    width: 310px;
+    height: 325px;
+    overflow: auto; /* Enable scroll if needed */
+    /* background-color: rgb(0,0,0); 
+    background-color: rgba(0,0,0,0.4);  */
+}
+
+
+.modal-content {
+    background-color: #fefefe59;
+    /* margin: 15% auto; */
+    padding: 5px;
+    border: 5px solid green;
+    width: 92%; /* Could be more or less, depending on screen size */
+    height: 92%;
+    border-radius: 15px ; 
+    -webkit-animation-name: animatetop;
+    -webkit-animation-duration: 0.4s;
+    animation-name: animatetop;
+    animation-duration: 0.4s
+}
+
+
+.buttonConfirm{
+    border-radius:15px;
+    border: 2px solid green;
+}
+
+.buttonConfirm:hover{
+    background-color: lightgray;
+}
+
+.buttonConfirm:active{
+    color: green;
+}
+
+.buttonUndo{
+    border-radius:15px;
+    border: 2px solid #ff0000b3;
+}
+
+.buttonUndo:hover{
+    background-color: lightgray;
+}
+
+.buttonUndo:active{
+    color:red;
+}
+
+.modal-header {
+    width: 100%;
+    height: 14%;
+
+}
+
+/* Modal Body */
+.modal-body {
+    width: 100%;
+    height: 69%;
+    overflow: auto;
+}
+
+/* Modal Footer */
+.modal-footer {
+    text-align: center;
+    padding-top: 4px;
+    width: 100%;
+    height: 20%;
+    color: white;
+}
+
+.footerButton{
+    justify-content: space-evenly;
+    display: flex;
+}
+
+
+.labelSelect{
+    justify-content: space-around;
+    display: flex;
+    align-items: baseline;
+
+}
+
+.selectSize{
+    width: 70%;
+
+}
+
+
+.addButton {
+    padding-top : 5px;
+    height: 25px;
+    width: 25px;
+    text-decoration: none;
+    display: inline-block;
+    outline: none;
+    cursor: pointer;
+    border-style: none;
+    color: white;
+    background-color: #3498db;
+    border-radius: 50%;
+    overflow: none;
+    text-align: center;
+    padding: 0;
+    font-size: 23px;
+  }
+
+
+.addButton:hover{
+    background-color: #205476;
+}
+
+
+.addButton:active{
+    background-color: green;
+}
+
+
+
+.removeButton{
+    padding-top : 5px;
+    height: 15px;
+    width: 15px;
+    text-decoration: none;
+    display: inline-block;
+    outline: none;
+    cursor: pointer;
+    border-style: none;
+    color: red;
+    background-color: white;
+    border-radius: 50%;
+    overflow: none;
+    text-align: center;
+    padding: 0;
+    font-size: 14px;
+  }
+
+
+.removeButton:hover{
+    background-color: lightgray;
+}
+
+
+.removeButton:active{
+    color: green;
+}

@@ -46,6 +46,7 @@ class App extends React.Component<{}, AppState> {
   designerWb1: GC.Spread.Sheets.Workbook | undefined
   ribbonConfig: any
   irionConfig: IrionConfig[] = []
+  fbx: any
 
   constructor(props: {}) {
     super(props)
@@ -61,6 +62,7 @@ class App extends React.Component<{}, AppState> {
     }
 
     this.ribbonConfig = this.getRibbonConfig()
+    this.fbx = null
   }
 
   showModal = () => {
@@ -73,11 +75,16 @@ class App extends React.Component<{}, AppState> {
   }
 
   showModalConfigurator = () => {
-    this.setState({ show: true })
+    this.setState({ showModalConfigurator: true })
   }
 
   hideModalConfigurator = () => {
-    this.setState({ show: false })
+    this.setState({ showModalConfigurator: false })
+  }
+
+  getSelectedRangeFormula(e: any) {
+    const a = document.getElementById('rangeText')!
+    a.textContent = this.fbx.text()
   }
 
   render() {
@@ -137,9 +144,12 @@ class App extends React.Component<{}, AppState> {
         <ModalCommandConfigurator
           showModalConfigurator={this.state.showModalConfigurator}
           onClose={this.hideModalConfigurator}
-        >
-          <p>Modal</p>
-        </ModalCommandConfigurator>
+          designerMode={this.state.designerMode}
+          getSelectedRangeFormula={(e: any) => {
+            this.getSelectedRangeFormula(e)
+          }}
+        ></ModalCommandConfigurator>
+        <div id="formulaBar"></div>
       </>
     )
   }
@@ -232,6 +242,13 @@ class App extends React.Component<{}, AppState> {
         }
       }
     )
+    const elementFormulaBar = document.getElementById('formulaBar')!
+    var fbx = new GC.Spread.Sheets.FormulaTextBox.FormulaTextBox(elementFormulaBar, {
+      rangeSelectMode: true,
+      absoluteReference: false,
+    })
+    fbx.workbook(workBook)
+    this.fbx = fbx
   }
 
   exportConfig = (workbook?: GC.Spread.Sheets.Workbook): Config => {

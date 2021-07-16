@@ -17,7 +17,7 @@ export const Modal: FunctionComponent<ModalProps> = ({
   const modal = (
     <React.Fragment>
     <div className = "center">
-      <div className = "modal">
+      <div className = "modalBinding">
     <div>ciao</div>
     <button onClick= {onClose}>CLICCAMI</button>
     </div>
