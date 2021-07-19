@@ -11,17 +11,29 @@ import './App.css'
 import { Modal } from './Modal'
 import { ModalCommandConfigurator } from './ModalCommandConfigurator'
 
-
 interface AppState {
   designerMode: boolean
   show: boolean
   showModalConfigurator: boolean
 }
 
+interface IrionConfig {
+  tableName: string
+  row: number
+  col: number
+  sheet: string
+  dataSource: string
+}
+
+interface Config {
+  spreadJs: { [key: string]: any }
+  irionConfig: IrionConfig[]
+}
+
 const SERVER_URL = 'https://jsonplaceholder.typicode.com'
 const POSTS_SOURCE = 'Posts'
 const USERS_SOURCE = 'Users'
-const DELAY = 100
+const DELAY = 5000
 const DATASOURCES = [POSTS_SOURCE, USERS_SOURCE]
 const WITH_BINDING = 'With Binding'
 const WITHOUT_BINDING = 'Without Binding'
@@ -33,7 +45,7 @@ class App extends React.Component<{}, AppState> {
   wb2: GC.Spread.Sheets.Workbook | undefined
   designerWb1: GC.Spread.Sheets.Workbook | undefined
   ribbonConfig: any
-  irionConfig: { tableName: string; row: number; col: number; sheet: string; dataSource: string }[] = []
+  irionConfig: IrionConfig[] = []
   fbx: any
 
   constructor(props: {}) {
@@ -44,13 +56,13 @@ class App extends React.Component<{}, AppState> {
     }
 
     this.state = {
-      designerMode: true,
+      designerMode: false,
       show: false,
       showModalConfigurator: false,
     }
 
     this.ribbonConfig = this.getRibbonConfig()
-    this.fbx = null;
+    this.fbx = null
   }
 
   showModal = () => {
@@ -70,10 +82,10 @@ class App extends React.Component<{}, AppState> {
     this.setState({ showModalConfigurator: false })
   }
 
-  getSelectedRangeFormula (e:any) {
+  getSelectedRangeFormula(e: any) {
     const a = document.getElementById('rangeText')!
-    a.textContent = this.fbx.text();
-}
+    a.textContent = this.fbx.text()
+  }
 
   render() {
     const { designerMode } = this.state
@@ -101,7 +113,6 @@ class App extends React.Component<{}, AppState> {
         </div>
 
         {(designerMode && (
-          
           <Designer
             styleInfo={{ width: '100%', height: '100vh' }}
             designerInitialized={(designer: any) => this.initDesigner(designer.getWorkbook())}
@@ -186,6 +197,27 @@ class App extends React.Component<{}, AppState> {
 
     // sheet.getRange(shiftRow + 3, 1, 1, 2).backColor('rgb(211, 211, 211)')
 
+    const dropdownStylefunction = new GC.Spread.Sheets.Style()
+    dropdownStylefunction.cellButtons = [
+      {
+        buttonBackColor: '#4061f3',
+        caption: 'Fire Cmd',
+        // captionAlign: GC.Spread.Sheets.CaptionAlignment.left,
+        // enabled: true,
+        // hoverBackColor: '#FF0000',
+        position: GC.Spread.Sheets.ButtonPosition.left,
+        useButtonStyle: true,
+        // visibility: GC.Spread.Sheets.ButtonVisibility.always,
+        width: 75,
+        // imageType: GC.Spread.Sheets.ButtonImageType.none,
+        command: (sheet, row, col, option) => {
+          console.log(sheet, row, col, option)
+          // Get Command from IrionConfig and fire it
+        },
+      },
+    ]
+    sheet.setStyle(0, 4, dropdownStylefunction)
+
     this.setTable(USERS_SOURCE, 1, 1, 'table1', sheet)
     workBook.resumePaint()
   }
@@ -233,7 +265,7 @@ class App extends React.Component<{}, AppState> {
     return exportJson
   }
 
-  exportConfig = (workbook?: GC.Spread.Sheets.Workbook) => {
+  exportConfig = (workbook?: GC.Spread.Sheets.Workbook): Config => {
     const serializationOption = {
       // includeBindingSource: true, // include binding source when converting the workbook to json, default value is false
       // ignoreStyle: false, // ignore styles when converting workbook to json, default value is false
@@ -247,15 +279,15 @@ class App extends React.Component<{}, AppState> {
     // WB1 configuration stringified
     const json = workbook?.toJSON(serializationOption)
 
-    const exportConfing = { spreadJS: { ...json }, irionConfi: { ...this.irionConfig } }
-    console.log('json', exportConfing)
+    const exportConfig: Config = { spreadJs: { ...json }, irionConfig: [...this.irionConfig] }
+    console.log('json', exportConfig)
 
-    return exportConfing
+    return exportConfig
   }
 
   exportToWB2 = () => {
     // Get config from WB1 and export it to WB2
-    const jsonStr = this.exportToJson(this.wb1)
+    const config = this.exportConfig(this.wb1)
 
     const jsonOptions = {
       // ignoreFormula: true, // ignore styles when converting json to workbook, default value is false
@@ -276,7 +308,7 @@ class App extends React.Component<{}, AppState> {
 
     // FromJson
     // this.wb2?.fromJSON(JSON.parse(jsonStr))
-    this.wb2?.fromJSON(JSON.parse(JSON.stringify(jsonStr)))
+    this.wb2?.fromJSON(JSON.parse(JSON.stringify(config.spreadJs)), jsonOptions)
 
     setTimeout(() => {
       this.irionConfig.forEach((tableConfig) => {
@@ -356,7 +388,8 @@ class App extends React.Component<{}, AppState> {
           table.bind(columns, '', data)
 
           this.updateIrionConfig(table.name(), row, col, sheet.name(), dataSource)
-          // this.fitColumns(sheet, columnNumber)
+          // this.fitColumns(sheet, col, columnNumber)
+          this.resizeColumns(sheet, col, columnNumber)
         })
         .catch((error) => {
           console.error(error)
@@ -396,20 +429,22 @@ class App extends React.Component<{}, AppState> {
     }
   }
 
-  resizeColumns = (sheet: GC.Spread.Sheets.Worksheet, columnCount: number) => {
+  resizeColumns = (sheet: GC.Spread.Sheets.Worksheet, startingColumn: number, columnCount: number) => {
     // Resize table columns
-    for (let i = 0; i < columnCount; i++) {
-      sheet.autoFitColumn(i)
+    const lastColumn = startingColumn + columnCount
+    for (let col = startingColumn; col < lastColumn; col++) {
+      sheet.autoFitColumn(col)
     }
   }
 
-  fitColumns = (sheet: GC.Spread.Sheets.Worksheet, columnCount: number) => {
+  fitColumns = (sheet: GC.Spread.Sheets.Worksheet, startingColumn: number, columnCount: number) => {
     // Set number of columns of the sheet to proportionally size them
     sheet.setColumnCount(columnCount)
 
     // Fit table columns
-    for (let i = 0; i < columnCount; i++) {
-      sheet.setColumnWidth(i, '*')
+    const lastColumn = startingColumn + columnCount
+    for (let col = startingColumn; col < lastColumn; col++) {
+      sheet.setColumnWidth(col, '*')
     }
   }
 
@@ -426,9 +461,9 @@ class App extends React.Component<{}, AppState> {
         bigButton: 'true',
         commandName: 'saveData',
         execute: async (context: any, propertyName: any, fontItalicChecked: any) => {
-          const result = this.exportToJson(this.designerWb1)
+          const config = this.exportConfig(this.designerWb1)
 
-          console.log('Save Action', result)
+          console.log('Save Action', config)
         },
       },
       listTable: {
@@ -558,8 +593,8 @@ class App extends React.Component<{}, AppState> {
           execute: async (context: any, propertyName: any, fontItalicChecked: any) => {
             if (exportName === WITHOUT_BINDING) {
               //da configurare
-
-              navigator.clipboard.writeText(JSON.stringify(this.exportToJson(this.designerWb1)))
+              const config = this.exportConfig(this.designerWb1)
+              navigator.clipboard.writeText(JSON.stringify(config.spreadJs))
             }
             if (exportName === WITH_BINDING) {
               //da configurare
