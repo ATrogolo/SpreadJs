@@ -65,16 +65,11 @@ export class ModalCommandConfigurator extends React.Component<any, any>{
   render(){
   const { showModalConfigurator, onClose, designerMode} = this.props
   const { options, parameters, commandSelected} = this.state
-  const elementFormulaBar = document.getElementById('formulaBar')!
-  // var fbx = this.state.spreadSheet.FormulaTextBox(elementFormulaBar,{rangeSelectMode: true, absoluteReference: false});
-  // fbx.workbook(this.state.spreadSheet.Workbook);
-  // this.setState({fbx : fbx});
-  // console.log("roba ",this.state.spreadSheet)
-    
+  
  return showModalConfigurator && designerMode ? (
   
     <div  className="modal">
-      <div id ='formulaBar'></div>
+
       <div className = "modal-content">
 
           <div className = "modal-header">
@@ -82,7 +77,7 @@ export class ModalCommandConfigurator extends React.Component<any, any>{
             <div className="labelSelect">
               <div>Command:</div>
               <div className="selectSize">
-                <Select  options={options} onChange={this.handleChange} />
+                <Select options={options} onChange={this.handleChange} />
               </div>
             </div>
               
@@ -90,40 +85,74 @@ export class ModalCommandConfigurator extends React.Component<any, any>{
 
 
            <div className="modal-body">
-             {Object.keys(commandSelected).length !== 0 && <span>
+           {Object.keys(commandSelected).length !== 0 &&<div  className='componentWraper'>
+            <p className='componentTitle'>Parameter</p>
+             <div className = 'overflow'>
                 {parameters.map((element: any, index: number) => {
                   return(
                    <div className="labelSelect" key= {index}>
-                     <div>Parameter: </div>
-                    <div >
-                    <form >
+                    <div>
+                      <Select options={options} onChange={this.handleChange} />
+                    </div>
+                    <div>
+                      <form >
                       {/* <input  defaultValue={element.value} onChange={() => this.setParameter(element.value, index)}/> */}
-                      <div id="formulaBar" spellCheck="false"
-                        style={{ border: "1px solid #808080", width: "100%" }}></div>
-                    </form>                  
-                      </div>
-                      <div>
+                        <div id="formulaBar" spellCheck="false" style={{ border: "1px solid #808080", width: "100%" }}></div>
+                      </form>                  
+                    </div>
+                    <div>
                       <button className="removeButton" onClick={() =>this.removeParameter(index)} >X</button> 
-                      </div>
+                    </div>
                    </div>
                   )
                 }
                 )}
-                </span>
-              }
+                </div>
+              
+              </div>
+          }
           </div>
+          {/* <div className="options-container">
+                <div className="top-options">
+                    <p>Click the icon of the rangeSelector, then select a range, then Click the 'Get Value' button.This can be useful for providing users the ability to select ranges for their formulas rather than manually typing them.</p>
+                    <div id="formulaBar" spellCheck="false"
+                        style={{ border: "1px solid #808080", width: "100%" }}></div>
+                </div>
+                <div className="options-row" style={{ marginTop: "10px" }}>
+                    <input type="button" id="getValue" value="Get Value" style={{ fontSize: "14px", height: "30px" }} onClick={(e)=>{this.props.getSelectedRangeFormula(e)}} />
+                    <label>
+                        Range Text: <span id="rangeText"
+                                        style={{ border: 0, outline: "none", fontSize: "14px", padding: 0 }}></span>
+                    </label>
+                </div>
+            </div>
+            
+            <div className="options-container">
+                <div className="top-options">
+                    <p>Click the icon of the rangeSelector, then select a range, then Click the 'Get Value' button.This can be useful for providing users the ability to select ranges for their formulas rather than manually typing them.</p>
+                    <div id="formulaBar" spellCheck="false"
+                        style={{ border: "1px solid #808080", width: "100%" }}></div>
+                </div>
+                <div className="options-row" style={{ marginTop: "10px" }}>
+                    <input type="button" id="getValue2" value="Get Value" style={{ fontSize: "14px", height: "30px" }} onClick={(e)=>{this.props.getSelectedRangeFormula(e)}} />
+                    <label>
+                        Range Text: <span id="rangeTextd"
+                                        style={{ border: 0, outline: "none", fontSize: "14px", padding: 0 }}></span>
+                    </label>
+                </div>
+            </div> */}
 
           <div className= "modal-footer">
             <div>
                 {Object.keys(commandSelected).length !== 0 &&<button className="addButton" onClick={() =>this.addParameter("")} >+</button>}
               </div>
               <div className="footerButton">
-            <button className="buttonUndo" onClick= {onClose}>ANNULLA</button>
-            <button  className="buttonConfirm" onClick= {onClose}>CONFERMA</button>
+            <button className="buttonUndo" onClick= {onClose}>CLOSE</button>
+            <button  className="buttonConfirm" onClick= {onClose}>CONFIRM</button>
             </div>
           </div>
 
-          
+          <div style={{display:"none"}} id="formulaBar" spellCheck="false"></div>
 
       </div>
 
