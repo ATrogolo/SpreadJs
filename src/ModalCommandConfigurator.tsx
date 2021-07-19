@@ -3,17 +3,20 @@ import React, { FunctionComponent,Component } from 'react';
 import ReactDOM from 'react-dom';
 import Select from 'react-select';
 import'./ModalCommandConfigurator.css';
-
+import * as GC from '@grapecity/spread-sheets'
 
 export interface ModalProps {
   showModalConfigurator: boolean;
   designerMode: boolean;
   onClose: () => void;
+  spreadSheet : any;
+  fbx : any;
 }
 
 
 
 export class ModalCommandConfigurator extends React.Component<any, any>{
+
 
   constructor(props:any) {
     super(props);
@@ -24,11 +27,14 @@ export class ModalCommandConfigurator extends React.Component<any, any>{
         { value: 'vanilla', label: 'Vanilla' }
       ],
       parameters :[],
-      commandSelected: {}
+      commandSelected: {},
+      spreadSheet : GC.Spread,
+      fbx: GC.Spread.Sheets.FormulaTextBox.FormulaTextBox
     };
-
-    //any initialization here or in other react class methods
+    
+    
   }
+
 
 
   removeParameter=( index:number)=>{
@@ -59,11 +65,16 @@ export class ModalCommandConfigurator extends React.Component<any, any>{
   render(){
   const { showModalConfigurator, onClose, designerMode} = this.props
   const { options, parameters, commandSelected} = this.state
-
+  const elementFormulaBar = document.getElementById('formulaBar')!
+  // var fbx = this.state.spreadSheet.FormulaTextBox(elementFormulaBar,{rangeSelectMode: true, absoluteReference: false});
+  // fbx.workbook(this.state.spreadSheet.Workbook);
+  // this.setState({fbx : fbx});
+  // console.log("roba ",this.state.spreadSheet)
     
  return showModalConfigurator && designerMode ? (
-
+  
     <div  className="modal">
+      <div id ='formulaBar'></div>
       <div className = "modal-content">
 
           <div className = "modal-header">

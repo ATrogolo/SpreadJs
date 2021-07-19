@@ -135,9 +135,11 @@ class App extends React.Component<{}, AppState> {
           onClose={this.hideModalConfigurator}
           designerMode={this.state.designerMode}
           getSelectedRangeFormula={(e:any)=>{this.getSelectedRangeFormula(e)}}
+          spreadSheet = {GC.Spread}
+          fbx = {this.fbx}
         >
         </ModalCommandConfigurator>
-        <div id ='formulaBar'></div>
+        
       </>
     )
   }
@@ -209,10 +211,7 @@ class App extends React.Component<{}, AppState> {
         }
       }
     )
-    const elementFormulaBar = document.getElementById('formulaBar')!
-    var fbx = new GC.Spread.Sheets.FormulaTextBox.FormulaTextBox(elementFormulaBar,{rangeSelectMode: true, absoluteReference: false});
-    fbx.workbook(workBook);
-    this.fbx = fbx;
+
   }
 
   exportToJson = (workbook?: GC.Spread.Sheets.Workbook) => {
