@@ -2,12 +2,6 @@
     
     position: fixed; 
     z-index: 1;
-    /* left: 0;
-    top: 0;
-    width: 100%; 
-    height: 100%; */
-    left: 40%;
-    top:28%;
     width: 310px;
     height: 325px;
     /*overflow: auto;  */
@@ -21,8 +15,8 @@
     /* margin: 15% auto; */
     padding: 5px;
     border: 5px solid green;
-    width: 92%; /* Could be more or less, depending on screen size */
-    height: 92%;
+    width: 93%; /* Could be more or less, depending on screen size */
+    height: 93%;
     border-radius: 15px ; 
     -webkit-animation-name: animatetop;
     -webkit-animation-duration: 0.4s;
@@ -179,3 +173,33 @@
     width: 100%;
     overflow: auto;
   }
+
+  .MuiDialog-paperWidthSm {
+
+    width: 310px;
+    height: 325px;
+}
+
+
+.MuiPaper-root{
+    background-color: #fff0 !important;
+}
+
+.MuiDialog-paper{
+    margin: 0px !important;
+}
+
+.MuiDialogTitle-root{
+    padding: 0px !important;
+    height: 5px;
+
+    z-index: 3;
+}
+
+.MuiPaper-elevation24{
+    box-shadow:none !important;
+}
+
+.MuiBackdrop-root {
+    background-color: #fff0 !important;
+}
