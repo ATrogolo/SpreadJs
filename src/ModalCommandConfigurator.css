@@ -81,8 +81,8 @@
 .labelSelect{
     justify-content: space-around;
     display: flex;
-    align-items: baseline;
 
+    align-items: center
 }
 
 .selectSize{
@@ -202,4 +202,14 @@
 
 .MuiBackdrop-root {
     background-color: #fff0 !important;
+    top: unset !important;
+    bottom: unset !important;
+    left: unset !important;
+    right: unset !important;
+}
+
+.MuiDialog-root{
+    inset: unset !important;
+    top: 15% !important;
+    left: 45% !important;
 }

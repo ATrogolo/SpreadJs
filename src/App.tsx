@@ -15,6 +15,7 @@ interface AppState {
   designerMode: boolean
   show: boolean
   showModalConfigurator: boolean
+  buttonCaption: string
 }
 
 interface IrionConfig {
@@ -59,6 +60,7 @@ class App extends React.Component<{}, AppState> {
       designerMode: true,
       show: false,
       showModalConfigurator: false,
+      buttonCaption: ''
     }
 
     this.ribbonConfig = this.getRibbonConfig()
@@ -100,6 +102,7 @@ class App extends React.Component<{}, AppState> {
           getSelectedRangeFormula={(e:any)=>{this.getSelectedRangeFormula(e)}}
           spreadSheet = {GC.Spread}
           fbx = {this.fbx}
+          buttonCaption = {this.state.buttonCaption}
         >
         </ModalCommandConfigurator>
         <div className="toolbar">
@@ -240,19 +243,19 @@ class App extends React.Component<{}, AppState> {
     this.designerWb1?.bind(
       GC.Spread.Sheets.Events.ButtonClicked,
       (sender: any, args: GC.Spread.Sheets.IButtonClickedEventArgs) => {
-        // const { sheet, row, col, sheetName, sheetArea } = args
+        const { sheet, row, col, sheetName, sheetArea } = args
 
-        // const cellType = sheet.getCellType(row, col)
-        // if (cellType instanceof GC.Spread.Sheets.CellTypes.Button) {
+         const cellType = sheet.getCellType(row, col)
+         if (cellType instanceof GC.Spread.Sheets.CellTypes.Button) {
         //   this.showModalConfigurator()
-
+        console.log("bottone classico ",sheet, row, col,sheetName, sheetArea)
         //   console.log(document)
         //   if(this.state.showModalConfigurator){
         //     var fbx = new GC.Spread.Sheets.FormulaTextBox.FormulaTextBox(document.getElementById('formulaBar')!, {rangeSelectMode: true, absoluteReference: false});
         //     fbx.workbook(workBook);
         //     this.fbx = fbx
         //   }
-        // }
+         }
       }
     )
 
@@ -521,6 +524,7 @@ class App extends React.Component<{}, AppState> {
               buttonBackColor:"green",          
               //configuro cosa deve accadere al click in griglia
               command: (sheet, row, col, option) => {
+                this.setState({buttonCaption: 'ciao' })
                 console.log(sheet, row, col, option)
                 // Get Command from IrionConfig and fire it
                 this.showModalConfigurator()
@@ -529,7 +533,7 @@ class App extends React.Component<{}, AppState> {
                 if(this.state.showModalConfigurator){
                   var fbx = new GC.Spread.Sheets.FormulaTextBox.FormulaTextBox(document.getElementById('formulaBar')!, {rangeSelectMode: true, absoluteReference: false});
              
-                  fbx.workbook(context.Spread.getWorkbook);
+                  fbx.workbook(context.Spread);
                   this.fbx = fbx
                 }
               },
