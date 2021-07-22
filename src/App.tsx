@@ -36,7 +36,7 @@ type ICellButtonExtended = GC.Spread.Sheets.ICellButton & { id: number }
 const SERVER_URL = 'https://jsonplaceholder.typicode.com'
 const POSTS_SOURCE = 'Posts'
 const USERS_SOURCE = 'Users'
-const DELAY = 5000
+const DELAY = 2000
 const DATASOURCES = [POSTS_SOURCE, USERS_SOURCE]
 const WITH_BINDING = 'With Binding'
 const WITHOUT_BINDING = 'Without Binding'
@@ -120,7 +120,13 @@ class App extends React.Component<{}, AppState> {
               <button className="export-config" onClick={this.exportToWB2}>
                 Export WB1 to WB2
               </button>
-              <button className="add-table" onClick={() => this.setTable(POSTS_SOURCE, 15, 1, 'table2')}>
+              <button
+                className="add-table"
+                onClick={() => {
+                  const sheet = this.wb1?.getActiveSheet()
+                  if (sheet) this.setTable(POSTS_SOURCE, 15, 1, 'table2', sheet)
+                }}
+              >
                 Add table (1,1)
               </button>
             </>
@@ -219,26 +225,9 @@ class App extends React.Component<{}, AppState> {
     this.bindEvents(this.designerWb1, sheet)
   }
 
-  exportToJson = (workbook?: GC.Spread.Sheets.Workbook) => {
-    const serializationOption = {
-      // includeBindingSource: true, // include binding source when converting the workbook to json, default value is false
-      // ignoreStyle: false, // ignore styles when converting workbook to json, default value is false
-      // ignoreFormula: true, // ignore formulas when converting workbook to json, default value is false
-      // saveAsView: true, //include the format string formatting result when converting workbook to json, default value is false
-      // rowHeadersAsFrozenColumns: true, // treat row headers as frozen columns when converting workbook to json, default value is false
-      // columnHeadersAsFrozenRows: true, // treat column headers as frozen rows when converting workbook to json, default value is false
-      // includeAutoMergedCells: true, // include the automatically merged cells to the real merged cells when converting the workbook to json.
-    }
-
-    // WB1 configuration stringified
-    const json = workbook?.toJSON(serializationOption)
-    const exportJson = { spreadJS: { ...json } }
-    console.log('json', exportJson)
-
-    return exportJson
   }
 
-  exportConfig = (workbook?: GC.Spread.Sheets.Workbook): Config => {
+  exportConfig = (workbook?: GC.Spread.Sheets.Workbook, withBindings: boolean = true): Config => {
     const serializationOption = {
       // includeBindingSource: true, // include binding source when converting the workbook to json, default value is false
       // ignoreStyle: false, // ignore styles when converting workbook to json, default value is false
@@ -251,8 +240,9 @@ class App extends React.Component<{}, AppState> {
 
     // WB1 configuration stringified
     const json = workbook?.toJSON(serializationOption)
+    const irionConfig = withBindings ? [...this.irionConfig] : []
 
-    const exportConfig: Config = { spreadJs: { ...json }, irionConfig: [...this.irionConfig] }
+    const exportConfig: Config = { spreadJs: { ...json }, irionConfig: irionConfig }
     console.log('json', exportConfig)
 
     return exportConfig
@@ -302,7 +292,7 @@ class App extends React.Component<{}, AppState> {
     row: number,
     col: number,
     tableName: string,
-    currentSheet?: GC.Spread.Sheets.Worksheet
+    currentSheet: GC.Spread.Sheets.Worksheet,
   ) => {
     const sheet = currentSheet ?? this.wb1?.getActiveSheet()
 
@@ -667,15 +657,10 @@ class App extends React.Component<{}, AppState> {
           bigButton: false,
           commandName: exportName,
           execute: async (context: any, propertyName: any, fontItalicChecked: any) => {
-            if (exportName === WITHOUT_BINDING) {
-              //da configurare
-              const config = this.exportConfig(this.designerWb1)
-              navigator.clipboard.writeText(JSON.stringify(config.spreadJs))
-            }
-            if (exportName === WITH_BINDING) {
-              //da configurare
-              navigator.clipboard.writeText(JSON.stringify(this.exportConfig(this.designerWb1)))
-            }
+            const exportBindings = exportName === WITH_BINDING
+
+            const config = this.exportConfig(this.designerWb1, exportBindings)
+            navigator.clipboard.writeText(JSON.stringify(config))
           },
         },
       }
@@ -718,7 +703,7 @@ class App extends React.Component<{}, AppState> {
     workBook.bind(
       GC.Spread.Sheets.Events.ButtonClicked,
       (sender: any, args: GC.Spread.Sheets.IButtonClickedEventArgs) => {
-        const { sheet, row, col, sheetName, sheetArea } = args
+        const { sheet, row, col } = args
 
         const cellType = sheet.getCellType(row, col)
         if (cellType instanceof GC.Spread.Sheets.CellTypes.Button) {

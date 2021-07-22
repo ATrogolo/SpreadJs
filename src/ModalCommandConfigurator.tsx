@@ -1,15 +1,11 @@
-import { render } from '@testing-library/react'
-import ReactDOM from 'react-dom'
-import Select from 'react-select'
-import './ModalCommandConfigurator.css'
 import * as GC from '@grapecity/spread-sheets'
-import Button from '@material-ui/core/Button'
 import Dialog from '@material-ui/core/Dialog'
 import DialogTitle from '@material-ui/core/DialogTitle'
 import Paper, { PaperProps } from '@material-ui/core/Paper'
-
 import React from 'react'
 import Draggable from 'react-draggable'
+import Select from 'react-select'
+import './ModalCommandConfigurator.css'
 
 export interface ModalProps {
   showModalConfigurator: boolean
@@ -100,17 +96,17 @@ export class ModalCommandConfigurator extends React.Component<any, any> {
                       {parameters.map((element: any, index: number) => {
                         return (
                           <div className="labelSelect" key={index}>
-                            <div style={{    width: '45%'}}>
+                            <div style={{ width: '45%' }}>
                               <Select options={options} onChange={this.handleChange} />
                             </div>
                             {/* <input  defaultValue={element.value} onChange={() => this.setParameter(element.value, index)}/> */}
-                            <div style={{width:'45%'}}>
-                            <div
-                              id="formulaBar"
-                              spellCheck="false"
-                              style={{ border: '1px solid #808080', width: '100%' }}
-                            ></div>
-                            {/* <input type="button" id="getValue" value="Get Value" style={{ fontSize: "14px", height: "30px" }} onClick={(e)=>{this.props.getSelectedRangeFormula(e)}} /> */}
+                            <div style={{ width: '45%' }}>
+                              <div
+                                id="formulaBar"
+                                spellCheck="false"
+                                style={{ border: '1px solid #808080', width: '100%' }}
+                              ></div>
+                              {/* <input type="button" id="getValue" value="Get Value" style={{ fontSize: "14px", height: "30px" }} onClick={(e)=>{this.props.getSelectedRangeFormula(e)}} /> */}
                             </div>
                             <div>
                               <button className="removeButton" onClick={() => this.removeParameter(index)}>
