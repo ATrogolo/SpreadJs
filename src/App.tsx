@@ -31,6 +31,8 @@ interface Config {
   irionConfig: IrionConfig[]
 }
 
+type ICellButtonExtended = GC.Spread.Sheets.ICellButton & { id: number }
+
 const SERVER_URL = 'https://jsonplaceholder.typicode.com'
 const POSTS_SOURCE = 'Posts'
 const USERS_SOURCE = 'Users'
@@ -60,7 +62,7 @@ class App extends React.Component<{}, AppState> {
       designerMode: true,
       show: false,
       showModalConfigurator: false,
-      buttonCaption: ''
+      buttonCaption: '',
     }
 
     this.ribbonConfig = this.getRibbonConfig()
@@ -99,12 +101,13 @@ class App extends React.Component<{}, AppState> {
           showModalConfigurator={this.state.showModalConfigurator}
           onClose={this.hideModalConfigurator}
           designerMode={this.state.designerMode}
-          getSelectedRangeFormula={(e:any)=>{this.getSelectedRangeFormula(e)}}
-          spreadSheet = {GC.Spread}
-          fbx = {this.fbx}
-          buttonCaption = {this.state.buttonCaption}
-        >
-        </ModalCommandConfigurator>
+          getSelectedRangeFormula={(e: any) => {
+            this.getSelectedRangeFormula(e)
+          }}
+          spreadSheet={GC.Spread}
+          fbx={this.fbx}
+          buttonCaption={this.state.buttonCaption}
+        ></ModalCommandConfigurator>
         <div className="toolbar">
           <button
             className={designerModeCssClass}
@@ -129,12 +132,7 @@ class App extends React.Component<{}, AppState> {
             styleInfo={{ width: '100%', height: '100vh' }}
             designerInitialized={(designer: any) => this.initDesigner(designer.getWorkbook())}
             config={this.ribbonConfig}
-          >
-
-          
-
-
-          </Designer>
+          ></Designer>
         )) || (
           <>
             <SpreadSheets
@@ -157,8 +155,6 @@ class App extends React.Component<{}, AppState> {
         <Modal show={this.state.show} onClose={this.hideModal}>
           <p>Modal</p>
         </Modal>
-
-        
       </>
     )
   }
@@ -168,7 +164,7 @@ class App extends React.Component<{}, AppState> {
     const sheet = workBook.getActiveSheet()
 
     // Bind events
-    this.bindEvents()
+    this.bindEvents(this.wb1, sheet)
 
     // Status Bar
     // workBook.suspendPaint()
@@ -205,27 +201,6 @@ class App extends React.Component<{}, AppState> {
 
     // sheet.getRange(shiftRow + 3, 1, 1, 2).backColor('rgb(211, 211, 211)')
 
-    const dropdownStylefunction = new GC.Spread.Sheets.Style()
-    dropdownStylefunction.cellButtons = [
-      {
-        buttonBackColor: '#4061f3',
-        caption: 'Fire Cmd',
-        // captionAlign: GC.Spread.Sheets.CaptionAlignment.left,
-        // enabled: true,
-        // hoverBackColor: '#FF0000',
-        position: GC.Spread.Sheets.ButtonPosition.left,
-        useButtonStyle: true,
-        // visibility: GC.Spread.Sheets.ButtonVisibility.always,
-        width: 75,
-        // imageType: GC.Spread.Sheets.ButtonImageType.none,
-        command: (sheet, row, col, option) => {
-          console.log(sheet, row, col, option)
-          // Get Command from IrionConfig and fire it
-        },
-      },
-    ]
-    sheet.setStyle(0, 4, dropdownStylefunction)
-
     this.setTable(USERS_SOURCE, 1, 1, 'table1', sheet)
     workBook.resumePaint()
   }
@@ -240,26 +215,8 @@ class App extends React.Component<{}, AppState> {
     const sheet = this.designerWb1?.getActiveSheet()
     sheet?.setValue(1, 1, 'Type something here!')
 
-    this.designerWb1?.bind(
-      GC.Spread.Sheets.Events.ButtonClicked,
-      (sender: any, args: GC.Spread.Sheets.IButtonClickedEventArgs) => {
-        const { sheet, row, col, sheetName, sheetArea } = args
-
-         const cellType = sheet.getCellType(row, col)
-         if (cellType instanceof GC.Spread.Sheets.CellTypes.Button) {
-        //   this.showModalConfigurator()
-        console.log("bottone classico ",sheet, row, col,sheetName, sheetArea)
-        //   console.log(document)
-        //   if(this.state.showModalConfigurator){
-        //     var fbx = new GC.Spread.Sheets.FormulaTextBox.FormulaTextBox(document.getElementById('formulaBar')!, {rangeSelectMode: true, absoluteReference: false});
-        //     fbx.workbook(workBook);
-        //     this.fbx = fbx
-        //   }
-         }
-      }
-    )
-
-
+    this.insertButtons(sheet)
+    this.bindEvents(this.designerWb1, sheet)
   }
 
   exportToJson = (workbook?: GC.Spread.Sheets.Workbook) => {
@@ -464,8 +421,51 @@ class App extends React.Component<{}, AppState> {
     }
   }
 
+  insertButtons = (sheet: GC.Spread.Sheets.Worksheet) => {
+    let id1 = new Date().getTime()
+    const row = sheet.getActiveRowIndex()
+    const col = sheet.getActiveColumnIndex()
+
+    const cellType = new GC.Spread.Sheets.CellTypes.Button()
+    cellType.buttonBackColor('#FFFF00')
+    cellType.text('CellType Button')
+
+    // Insert cellType
+    const cell = sheet.getCell(row, col)
+    cell.tag(id1)
+    cell.cellType(cellType)
+
+    // Insert cellStyle
+    let id2 = new Date().getTime()
+    const dropdownStylefunction = new GC.Spread.Sheets.Style()
+    dropdownStylefunction.cellButtons = [
+      {
+        buttonBackColor: '#94cefd',
+        caption: 'CellStyle Button',
+        id: id2,
+        // captionAlign: GC.Spread.Sheets.CaptionAlignment.left,
+        // enabled: true,
+        // hoverBackColor: '#FF0000',
+        position: GC.Spread.Sheets.ButtonPosition.left,
+        useButtonStyle: true,
+        // visibility: GC.Spread.Sheets.ButtonVisibility.always,
+        width: 125,
+        // imageType: GC.Spread.Sheets.ButtonImageType.none,
+        command: (sheet: GC.Spread.Sheets.Worksheet, row: number, col: number, option: any) => {
+          const cellButton: ICellButtonExtended = sheet.getCell(row, col).cellButtons()?.[0]
+          console.log('ButtonClicked', cellButton.id)
+
+          // Get Command from IrionConfig and trigger it
+        },
+      },
+    ] as ICellButtonExtended[]
+
+    sheet.setStyle(row, col + 1, dropdownStylefunction)
+
+    // this.resizeColumns(sheet, col, 2)
+  }
+
   getRibbonConfig = () => {
-     const config1 = (GC.Spread.Sheets as any).Designer
     // config1.getCommand().cellType.subCommands.push("commandWindosButtonConfiguration")
     const config = (GC.Spread.Sheets as any).Designer.DefaultConfig
 
@@ -509,43 +509,45 @@ class App extends React.Component<{}, AppState> {
         bigButton: true,
         commandName: 'ribbonButtonButtonCellType',
         useButtonStyle: true,
-        
+
         execute: async (context: any, propertyName: any, fontItalicChecked: any) => {
-          var activeSheet = context.Spread.getActiveSheet();
-          var basicButttonStyle = new GC.Spread.Sheets.Style();
-          basicButttonStyle.cellButtons = 
-          [ //configuro come deve essere il bottone
+          var activeSheet = context.Spread.getActiveSheet()
+          var basicButttonStyle = new GC.Spread.Sheets.Style()
+          basicButttonStyle.cellButtons = [
+            //configuro come deve essere il bottone
             {
-              caption: "enable",
+              caption: 'enable',
               useButtonStyle: true,
               // enabled: true,
               width: undefined!,
-              hoverBackColor: "deepskyblue",
-              buttonBackColor:"green",          
+              hoverBackColor: 'deepskyblue',
+              buttonBackColor: 'green',
               //configuro cosa deve accadere al click in griglia
               command: (sheet, row, col, option) => {
-                this.setState({buttonCaption: 'ciao' })
+                this.setState({ buttonCaption: 'ciao' })
                 console.log(sheet, row, col, option)
                 // Get Command from IrionConfig and fire it
                 this.showModalConfigurator()
 
                 console.log(document)
-                if(this.state.showModalConfigurator){
-                  var fbx = new GC.Spread.Sheets.FormulaTextBox.FormulaTextBox(document.getElementById('formulaBar')!, {rangeSelectMode: true, absoluteReference: false});
-             
-                  fbx.workbook(context.Spread);
+                if (this.state.showModalConfigurator) {
+                  var fbx = new GC.Spread.Sheets.FormulaTextBox.FormulaTextBox(document.getElementById('formulaBar')!, {
+                    rangeSelectMode: true,
+                    absoluteReference: false,
+                  })
+
+                  fbx.workbook(context.Spread)
                   this.fbx = fbx
                 }
               },
-            }
-          ];
+            },
+          ]
           //pesco la cella selezionata
           const row = activeSheet.getActiveRowIndex()
           const col = activeSheet.getActiveColumnIndex()
 
-          activeSheet.setText(row, col);
-          activeSheet.setStyle(row, col, basicButttonStyle);
-          
+          activeSheet.setText(row, col)
+          activeSheet.setStyle(row, col, basicButttonStyle)
         },
       },
     }
@@ -629,7 +631,7 @@ class App extends React.Component<{}, AppState> {
                 },
               ],
             },
-          },
+          }
         )
       }
     })
@@ -712,9 +714,25 @@ class App extends React.Component<{}, AppState> {
     })
   }
 
-  bindEvents = () => {
-    const sheet = this.wb1?.getActiveSheet()
-    if (!sheet) return
+  bindEvents = (workBook: GC.Spread.Sheets.Workbook, sheet: GC.Spread.Sheets.Worksheet) => {
+    workBook.bind(
+      GC.Spread.Sheets.Events.ButtonClicked,
+      (sender: any, args: GC.Spread.Sheets.IButtonClickedEventArgs) => {
+        const { sheet, row, col, sheetName, sheetArea } = args
+
+        const cellType = sheet.getCellType(row, col)
+        if (cellType instanceof GC.Spread.Sheets.CellTypes.Button) {
+          //   this.showModalConfigurator()
+
+          const cell = sheet.getCell(row, col)
+          const id = cell.tag()
+
+          console.log('ButtonClicked', id)
+
+          // Get Command from IrionConfig and trigger it
+        }
+      }
+    )
 
     sheet.bind(
       GC.Spread.Sheets.Events.TableRowsChanged,
