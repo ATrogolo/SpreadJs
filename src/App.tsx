@@ -411,7 +411,7 @@ class App extends React.Component<{}, AppState> {
   }
 
   tweakData = (data: any[], dataSource: string) => {
-    let _id = 0
+    // let _id = 0
     data = data.map((row) => {
       // Remove columns
       if (dataSource === POSTS_SOURCE) {
@@ -422,7 +422,7 @@ class App extends React.Component<{}, AppState> {
         return slice
       }
       //   // Add columns
-      //   _id++
+      // _id++
       //   if (dataSource === POSTS_SOURCE) {
       //     const { userId, id, title, body } = row
       //     return { userId, id, unId: _id, unaStringa: 'aa ' + row.id, title, body }
@@ -441,7 +441,7 @@ class App extends React.Component<{}, AppState> {
       //       company,
       //     }
       //   }
-      //   return row
+      return row
     })
     // if (dataSource === USERS_SOURCE) {
     //   // Add rows
