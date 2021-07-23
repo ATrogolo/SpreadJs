@@ -11,6 +11,11 @@ import './App.css'
 import { Modal } from './Modal'
 import { ModalCommandConfigurator } from './ModalCommandConfigurator'
 
+// GC.Spread.Sheets.LicenseKey =
+//   'GrapeCity-Internal-Use-Only,362369852286222#B0vRARPV5NrR6LUhmN8YGe4k5LhlkbhJWaZVkSmBjellXUF5URz46a4N6RhhDNadjW7c6d4VES7MURnlHVXd5V7gnVwA7YxIkeYNXMwxGdqVzUlhVMzIUWxdXTwgTUJZlNvImdBJ4SW5GTExEezhVOOxWb7R7VKF7TaFnWYJ4L6c7NoN4RRNGSXVEaKJDTFVTYCNmMKNlUZNFMjNzSxgHRwhTMwQ4QsRVWlFTMjFmdUZjYyUXZRR6bXV6RBt6NDBHV8Z5drdWZtRUbCJHeZRFO8F6R5AzM4ljSXNjQ9gTMqBHah5UTKZWT6h6YihXU8Q6V7ckI0IyUiwiIyUUNzAjQwcjI0ICSiwCN9EzM9kjM4YTM0IicfJye#4Xfd5nIFVUSWJiOiMkIsICNx8idgAyUKBCZhVmcwNlI0IiTis7W0ICZyBlIsISM4ETNyADIxAjMxAjMwIjI0ICdyNkIsIybp9ie4lGbit6YhR7cuoCLt36YukHdpNWZwFmcn9iKiojIz5GRiwiI9RXaDVGchJ7RiojIh94QiwiIyIjM6gjMyUDO9YzMyYzMiojIklkIs4XZzxWYmpjIyNHZisnOiwmbBJye0ICRiwiI34TQQFUM6NlUvFjQ6J5dRJzbk3Ca4U6N8c5MxNmQ5JFRW3EWJxEayhFZ4FncPJndZRUahRzcFdnZGZUOpRGeSRVWiplUy8EWh9kV8gjTip5bNpkSSFGWvcVMYVTURlHcHVXMwJjU' as any
+// ;(GC.Spread.Sheets as any).Designer.LicenseKey =
+//   'GrapeCity-Internal-Use-Only,118434355471155#B0u5f7hlbHVHc8NjbktydGlVdsp5KYJ6Tw36M7gVcOJGO5QXOYBXMFdmUwxmU6VVZkJTeUxEW7p7TmF7Z9JFZhR5dDJHNoJWV5hFdwYUOpZzYiF6YRlkcaJ7MPdjRXJURr56Nr84cwYWaWZTMEBjbGJ6Uk9mY5FUQS5EWVp7Z4EDOFZUeUJ7SIp6STZ7UjRHaMVmTCdzSjpWeBJXQa54MohWOzolbSFHOtFTZVBHcLRTSo5UYipFU7NzQXJ7LD9GSzQ6bz24Lnplba3UclVDczJ6SzZjYnRnR49GV7ZVYNpkRrkXZRhkd6IFZNFlI0IyUiwiIGBTOEZUNyUjI0ICSiwCMxcDM6AjNxQTM0IicfJye&Qf35VfiklNFdjI0IyQiwiI4EjL6Bicl96ZpNXZE5yUKRWYlJHcTJiOi8kI1tlOiQmcQJCLiUTNzIzNwAyNwITMwIDMyIiOiQncDJCLi2WauoHdpxmYrNWY4NnLqwSbvNmL9RXajVGchJ7ZuoiI0IyctRkIsISe4l6QlBXYydkI0ISYONkIsISN5ETM7QTN5MDNzQDOxEjI0ICZJJye0ICRiwiI34TQwYDeJlUeHhEa9okZQhmaZ94UVdGUhNGe5UEeUVUWVVDU5o4N5ADNrkUOxN5NvQ5NBRFOGF4RjhlcVVmaTRUeVlnTVlGaQRER844RsVEO9AjbFJnSx8EMxQ5KZdlUNNXQtNEak3SVlrDbM' as any
+
 interface AppState {
   designerMode: boolean
   show: boolean
@@ -59,7 +64,7 @@ class App extends React.Component<{}, AppState> {
     }
 
     this.state = {
-      designerMode: true,
+      designerMode: false,
       show: false,
       showModalConfigurator: false,
       buttonCaption: '',
@@ -124,10 +129,12 @@ class App extends React.Component<{}, AppState> {
                 className="add-table"
                 onClick={() => {
                   const sheet = this.wb1?.getActiveSheet()
-                  if (sheet) this.setTable(POSTS_SOURCE, 15, 1, 'table2', sheet)
+                  if (sheet) {
+                    this.setTable(POSTS_SOURCE, 1, 1, 'table2', sheet)
+                  }
                 }}
               >
-                Add table (1,1)
+                Add table (15,1)
               </button>
             </>
           )}
@@ -141,11 +148,17 @@ class App extends React.Component<{}, AppState> {
           ></Designer>
         )) || (
           <>
-            <SpreadSheets
+            <Designer
+              styleInfo={{ width: '100%', height: '65vh' }}
+              designerInitialized={(designer: any) => this.initSpread1(designer.getWorkbook())}
+              config={this.ribbonConfig}
+            ></Designer>
+
+            {/* <SpreadSheets
               hostStyle={this.hostStyle}
               name="WB1"
               workbookInitialized={(workBook) => this.initSpread1(workBook)}
-            ></SpreadSheets>
+            ></SpreadSheets> */}
             <div id="statusBar"></div>
 
             <hr />
@@ -207,7 +220,7 @@ class App extends React.Component<{}, AppState> {
 
     // sheet.getRange(shiftRow + 3, 1, 1, 2).backColor('rgb(211, 211, 211)')
 
-    this.setTable(USERS_SOURCE, 1, 1, 'table1', sheet)
+    this.setTable(USERS_SOURCE, 10, 1, 'table1', sheet)
     workBook.resumePaint()
   }
 
@@ -223,8 +236,8 @@ class App extends React.Component<{}, AppState> {
 
     this.insertButtons(sheet)
     this.bindEvents(this.designerWb1, sheet)
-  }
 
+    this.setTable(POSTS_SOURCE, 5, 2, 'ds_wb_table1', sheet)
   }
 
   exportConfig = (workbook?: GC.Spread.Sheets.Workbook, withBindings: boolean = true): Config => {
@@ -282,7 +295,7 @@ class App extends React.Component<{}, AppState> {
           this.wb2?.addSheetTab(0, sheetName, GC.Spread.Sheets.SheetType.tableSheet)
 
         // Insert (import) table
-        this.setTable(dataSource, row, col, tableName, sheet)
+        this.setTable(dataSource, row, col, tableName, sheet, true)
       })
     }, DELAY)
   }
@@ -293,6 +306,7 @@ class App extends React.Component<{}, AppState> {
     col: number,
     tableName: string,
     currentSheet: GC.Spread.Sheets.Worksheet,
+    tweakData: boolean = false
   ) => {
     const sheet = currentSheet ?? this.wb1?.getActiveSheet()
 
@@ -303,19 +317,15 @@ class App extends React.Component<{}, AppState> {
 
       this.fetchData(dataSource)
         .then((json: any[]) => {
-          const data = dataSource === POSTS_SOURCE ? json.slice(0, 2) : json
+          let data = dataSource === POSTS_SOURCE ? json.slice(0, 2) : json
+
+          if (tweakData) {
+            data = this.tweakData(data, dataSource)
+          }
 
           const rowNumber = data.length
           const columnNames = Object.keys(data[0])
           const columnNumber = columnNames.length
-
-          // const table2 = sheet.tables.addFromDataSource(
-          //   tableUniqueName,
-          //   row,
-          //   col,
-          //   data,
-          //   GC.Spread.Sheets.Tables.TableThemes.medium2
-          // )
 
           let table = sheet.tables.find(row, col)
           if (table == null) {
@@ -329,7 +339,6 @@ class App extends React.Component<{}, AppState> {
             )
           }
 
-          // let column
           const columns: any[] = []
           columnNames.forEach((columnName, index) => {
             const column = new GC.Spread.Sheets.Tables.TableColumn(index, columnName)
@@ -337,17 +346,7 @@ class App extends React.Component<{}, AppState> {
             columns.push(column)
           })
 
-          // column = new GC.Spread.Sheets.Tables.TableColumn(
-          //   2,
-          //   'id',
-          //   'ID',
-          //   undefined,
-          //   undefined,
-          //   (item: any) => item['id'] + '€'
-          // )
-          // columns.push(column)
-
-          table.autoGenerateColumns(false)
+          table.autoGenerateColumns(true) // nonsense but it works when removing columns
           table.bind(columns, '', data)
 
           this.updateIrionConfig(table.name(), row, col, sheet.name(), dataSource)
@@ -409,6 +408,76 @@ class App extends React.Component<{}, AppState> {
     for (let col = startingColumn; col < lastColumn; col++) {
       sheet.setColumnWidth(col, '*')
     }
+  }
+
+  tweakData = (data: any[], dataSource: string) => {
+    let _id = 0
+    data = data.map((row) => {
+      // Remove columns
+      if (dataSource === POSTS_SOURCE) {
+        const { title, body, ...slice } = row
+        return slice
+      } else if (dataSource === USERS_SOURCE) {
+        const { username, email, ...slice } = row
+        return slice
+      }
+      //   // Add columns
+      //   _id++
+      //   if (dataSource === POSTS_SOURCE) {
+      //     const { userId, id, title, body } = row
+      //     return { userId, id, unId: _id, unaStringa: 'aa ' + row.id, title, body }
+      //   } else if (dataSource === USERS_SOURCE) {
+      //     const { id, name, username, email, address, phone, website, company } = row
+      //     return {
+      //       id,
+      //       name,
+      //       unId: _id,
+      //       unaStringa: `aa ${_id}`,
+      //       username,
+      //       email,
+      //       address,
+      //       phone,
+      //       website,
+      //       company,
+      //     }
+      //   }
+      //   return row
+    })
+    // if (dataSource === USERS_SOURCE) {
+    //   // Add rows
+    //   data.push({
+    //     id: 12,
+    //     name: 'Carmine',
+    //     username: 'Car',
+    //     email: 'asd@asd.it',
+    //   })
+    //   data.push({
+    //     id: 13,
+    //     name: 'Carmine',
+    //     username: 'Car',
+    //     email: 'asd@asd.it',
+    //   })
+    //   data.push({
+    //     id: 14,
+    //     name: 'Carmine',
+    //     username: 'Car',
+    //     email: 'asd@asd.it',
+    //   })
+    //   data.push({
+    //     id: 15,
+    //     name: 'Carmine',
+    //     username: 'Car',
+    //     email: 'asd@asd.it',
+    //   })
+    //   data.push({
+    //     id: 16,
+    //     name: 'Carmine',
+    //     username: 'Car',
+    //     email: 'asd@asd.it',
+    //   })
+    // }
+
+    return data
   }
 
   insertButtons = (sheet: GC.Spread.Sheets.Worksheet) => {
@@ -540,6 +609,26 @@ class App extends React.Component<{}, AppState> {
           activeSheet.setStyle(row, col, basicButttonStyle)
         },
       },
+      editTable: {
+        title: 'Edit table',
+        text: 'Edit table',
+        iconClass: 'ribbon-button-sheetgeneral',
+        bigButton: 'true',
+        commandName: 'EditTable',
+        execute: async (context: any, propertyName: any, fontItalicChecked: any) => {
+          const activeSheet: GC.Spread.Sheets.Worksheet = context.Spread.getActiveSheet()
+          const row = activeSheet.getActiveRowIndex()
+          const col = activeSheet.getActiveColumnIndex()
+
+          const table = activeSheet.tables.find(row, col)
+          const isTable = table != null
+
+          if (isTable) {
+            // Open modal and edit data
+            this.showModal()
+          }
+        },
+      },
     }
 
     //genero la lista delle tabelle per il ribbon e relative azioni
@@ -621,6 +710,18 @@ class App extends React.Component<{}, AppState> {
                 },
               ],
             },
+          },
+          {
+            label: 'Edit Table',
+            thumbnailClass: 'ribbon-thumbnail-save',
+            commandGroup: {
+              children: [
+                {
+                  direction: 'vertical',
+                  commands: ['editTable'],
+                },
+              ],
+            },
           }
         )
       }
@@ -659,7 +760,7 @@ class App extends React.Component<{}, AppState> {
           execute: async (context: any, propertyName: any, fontItalicChecked: any) => {
             const exportBindings = exportName === WITH_BINDING
 
-            const config = this.exportConfig(this.designerWb1, exportBindings)
+            const config = this.exportConfig(context.Spread, exportBindings)
             navigator.clipboard.writeText(JSON.stringify(config))
           },
         },
@@ -682,12 +783,12 @@ class App extends React.Component<{}, AppState> {
           bigButton: false,
           commandName: tableName,
           execute: async (context: any, propertyName: any, fontItalicChecked: any) => {
-            const sheet = this.designerWb1?.getActiveSheet()
+            const sheet = context.Spread.getActiveSheet()
 
             if (sheet) {
               const row = sheet.getActiveRowIndex()
               const col = sheet.getActiveColumnIndex()
-              //this.showModal()
+              // this.showModal()
 
               this.setTable(tableName, row, col, tableName, sheet)
             }
@@ -718,6 +819,16 @@ class App extends React.Component<{}, AppState> {
         }
       }
     )
+
+    workBook.bind(GC.Spread.Sheets.Events.CellChanged, (sender: any, args: GC.Spread.Sheets.ICellChangedEventArgs) => {
+      const { oldValue, newValue, propertyName } = args
+
+      if (propertyName === '[styleinfo]') {
+        if (oldValue.cellType && !newValue.cellType) {
+          console.log('cellType Cleared')
+        }
+      }
+    })
 
     sheet.bind(
       GC.Spread.Sheets.Events.TableRowsChanged,
