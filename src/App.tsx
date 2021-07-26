@@ -41,8 +41,10 @@ type ICellButtonExtended = GC.Spread.Sheets.ICellButton & { id: number }
 const SERVER_URL = 'https://jsonplaceholder.typicode.com'
 const POSTS_SOURCE = 'Posts'
 const USERS_SOURCE = 'Users'
+const TODOS_SOURCE = 'Todos'
+const COMMENTS_SOURCE = 'Comments'
 const DELAY = 2000
-const DATASOURCES = [POSTS_SOURCE, USERS_SOURCE]
+const DATASOURCES = [POSTS_SOURCE, USERS_SOURCE, TODOS_SOURCE, COMMENTS_SOURCE]
 const WITH_BINDING = 'With Binding'
 const WITHOUT_BINDING = 'Without Binding'
 const EXPORT_MODE = [WITH_BINDING, WITHOUT_BINDING]
@@ -125,19 +127,19 @@ class App extends React.Component<{}, AppState> {
               <button className="export-config" onClick={this.exportToWB2}>
                 Export WB1 to WB2
               </button>
-              <button
+              {/* <button
                 className="add-table"
                 onClick={() => {
                   const sheet = this.wb1?.getActiveSheet()
                   if (sheet) {
-                    this.fetchData(POSTS_SOURCE).then(json => {
-                      this.setTable(json, POSTS_SOURCE, 1, 1, 'table2', sheet,false,true)
+                    this.fetchData(POSTS_SOURCE).then((json) => {
+                      this.setTable(json, POSTS_SOURCE, 1, 1, 'table2', sheet, false, true)
                     })
                   }
                 }}
               >
                 Add table (15,1)
-              </button>
+              </button> */}
             </>
           )}
         </div>
@@ -196,17 +198,6 @@ class App extends React.Component<{}, AppState> {
     // }
     // workBook.resumePaint()
 
-    // //initialize the spread
-    // workBook.suspendPaint()
-    //Setting Values - Text
-    // const shiftRow = 14
-    // sheet.setValue(shiftRow + 1, 1, 'Setting Values')
-    // //Setting Values - Number
-    // sheet.setValue(shiftRow + 2, 1, 'Number')
-    // sheet.setValue(shiftRow + 2, 2, 23)
-    // sheet.setValue(shiftRow + 3, 1, 'Text')
-    // sheet.setValue(shiftRow + 3, 2, 'GrapeCity')
-    // sheet.setValue(shiftRow + 4, 1, 'Datetime')
     // //Setting Values - DateTime
     // sheet
     //   .getCell(shiftRow + 4, 2)
@@ -222,10 +213,10 @@ class App extends React.Component<{}, AppState> {
 
     // sheet.getRange(shiftRow + 3, 1, 1, 2).backColor('rgb(211, 211, 211)')
 
-    this.fetchData(USERS_SOURCE).then(json => {
-      this.setTable(json, USERS_SOURCE, 10, 1, 'table1', sheet,false,true)
-    })
-    
+    // this.fetchData(USERS_SOURCE).then((json) => {
+    //   this.setTable(json, USERS_SOURCE, 10, 1, 'table1', sheet, false, true)
+    // })
+
     workBook.resumePaint()
   }
 
@@ -242,10 +233,9 @@ class App extends React.Component<{}, AppState> {
     this.insertButtons(sheet)
     this.bindEvents(this.designerWb1, sheet)
 
-
-    this.fetchData(POSTS_SOURCE).then(json => {
-      this.setTable(json, POSTS_SOURCE, 5, 2, 'ds_wb_table1', sheet)
-    })
+    // this.fetchData(POSTS_SOURCE).then((json) => {
+    //   this.setTable(json, POSTS_SOURCE, 5, 2, 'ds_wb_table1', sheet, false, true)
+    // })
   }
 
   exportConfig = (workbook?: GC.Spread.Sheets.Workbook, withBindings: boolean = true): Config => {
@@ -317,6 +307,28 @@ class App extends React.Component<{}, AppState> {
     }, DELAY)
   }
 
+  addMoreRoom = (
+    sheet: GC.Spread.Sheets.Worksheet,
+    row: number,
+    rowNumber: number,
+    col: number,
+    columnNumber: number
+  ) => {
+    // Check available space
+    const sheetRowCount = sheet.getRowCount()
+    const sheetColCount = sheet.getColumnCount()
+    // Rows
+    if (sheetRowCount - row < rowNumber) {
+      const rowsToAdd = rowNumber - sheetRowCount + row + 10
+      sheet.addRows(sheetRowCount - 1, rowsToAdd)
+    }
+    // Columns
+    if (sheetColCount - col < columnNumber) {
+      const colsToAdd = columnNumber - sheetColCount + col + 10
+      sheet.addColumns(sheetColCount - 1, colsToAdd)
+    }
+  }
+
   setTable = (
     json: any[],
     dataSource: string,
@@ -324,8 +336,7 @@ class App extends React.Component<{}, AppState> {
     col: number,
     tableName: string,
     currentSheet: GC.Spread.Sheets.Worksheet,
-    tweakData: boolean = false,
-    updateIrionConfig: boolean = false  
+    tweakData: boolean = false
   ) => {
     const sheet = currentSheet ?? this.wb1?.getActiveSheet()
 
@@ -333,52 +344,56 @@ class App extends React.Component<{}, AppState> {
       // this.wb1?.suspendPaint()
       // this.wb2?.suspendPaint()
       // this.designerWb1?.suspendPaint()
+      try {
+        let data = dataSource === POSTS_SOURCE || dataSource === COMMENTS_SOURCE ? json.slice(0, 2) : json
 
-      let data = dataSource === POSTS_SOURCE ? json.slice(0, 2) : json
+        if (tweakData) {
+          data = this.tweakData(data, dataSource)
+        }
 
-      // if (tweakData) {
-      //   data = this.tweakData(data, dataSource)
-      // }
+        const rowNumber = data.length
+        const columnNames = Object.keys(data[0])
+        const columnNumber = columnNames.length
 
-      const rowNumber = data.length
-      const columnNames = Object.keys(data[0])
-      const columnNumber = columnNames.length
+        // Add more rows / columns if there's no enough room
+        this.addMoreRoom(sheet, row, rowNumber, col, columnNumber)
 
-      let table = sheet.tables.findByName(tableName)
-      if (table == null) {
+        let table = sheet.tables.findByName(tableName)
+        if (table == null) {
+          table = sheet.tables.add(tableName, row, col, rowNumber, columnNumber)
 
-        table = sheet.tables.add(tableName, row, col, rowNumber, columnNumber)
+          console.log('Sto inserendo la tabella ', tableName)
+        } else {
+          console.warn(
+            'La tabella è già definita nel foglio. Probabilmente è stata importata una configurazione precedente'
+          )
+        }
 
-        console.log('Sto inserendo la tabella ', tableName)
-      } else {
-        console.warn(
-          'La tabella è già definita nel foglio. Probabilmente è stata importata una configurazione precedente'
-        )
+        const columns: any[] = []
+        columnNames.forEach((columnName, index) => {
+          const column = new GC.Spread.Sheets.Tables.TableColumn(index, columnName)
+
+          columns.push(column)
+        })
+
+        table.autoGenerateColumns(true) // nonsense but it works when removing columns
+
+        table.bind(columns, '', data)
+        // table.bind(columns, '', data)
+        // do it again for bug
+        // #6. Thanks for the sample this looks like bug to me hence we have escalated this issue to the concerned team for further investigation.
+        // Till then as a workaround you may call the bind method twice that should solve the issue.
+        // Please refer to the following update sample and let us know if you face any issues. sample: https://codesandbox.io/s/blue-fast-qb68d?file=/src/index.js
+
+        // this.fitColumns(sheet, col, columnNumber)
+        // this.resizeColumns(sheet, col, columnNumber)
+      } catch (error) {
+        console.error(error)
+
+        // this.wb1?.resumePaint()
+        // this.wb2?.resumePaint()
+        // this.designerWb1?.resumePaint()
       }
-
-      const columns: any[] = []
-      columnNames.forEach((columnName, index) => {
-        const column = new GC.Spread.Sheets.Tables.TableColumn(index, columnName)
-
-        columns.push(column)
-      })
-
-      table.autoGenerateColumns(true) // nonsense but it works when removing columns
-      table.bind(columns, '', data)
-
-      if(updateIrionConfig ){
-        this.updateIrionConfig(table.name(), row, col, sheet.name(), dataSource)
-      }
-      // this.fitColumns(sheet, col, columnNumber)
-      this.resizeColumns(sheet, col, columnNumber)
-
-      // .catch((error) => {
-      //   console.error(error)
-
-      //   // this.wb1?.resumePaint()
-      //   // this.wb2?.resumePaint()
-      //   // this.designerWb1?.resumePaint()
-      // })
       // .finally(() => {
       //   // this.wb1?.resumePaint()
       //   // this.wb2?.resumePaint()
@@ -393,7 +408,7 @@ class App extends React.Component<{}, AppState> {
 
   updateIrionConfig = (tableName: string, row: number, col: number, sheet: string, dataSource: string) => {
     const index = this.irionConfig.findIndex(
-      (item) => item.sheet === sheet   && item.tableName === tableName // && item.row === row && item.col === col
+      (item) => item.sheet === sheet && item.tableName === tableName // && item.row === row && item.col === col
     )
     const tableConfig = {
       tableName,
@@ -431,37 +446,37 @@ class App extends React.Component<{}, AppState> {
 
   tweakData = (data: any[], dataSource: string) => {
     // let _id = 0
-    data = data.map((row) => {
-      // Remove columns
-      if (dataSource === POSTS_SOURCE) {
-        const { title, body, ...slice } = row
-        return slice
-      } else if (dataSource === USERS_SOURCE) {
-        const { username, email, ...slice } = row
-        return slice
-      }
-      //   // Add columns
-      // _id++
-      //   if (dataSource === POSTS_SOURCE) {
-      //     const { userId, id, title, body } = row
-      //     return { userId, id, unId: _id, unaStringa: 'aa ' + row.id, title, body }
-      //   } else if (dataSource === USERS_SOURCE) {
-      //     const { id, name, username, email, address, phone, website, company } = row
-      //     return {
-      //       id,
-      //       name,
-      //       unId: _id,
-      //       unaStringa: `aa ${_id}`,
-      //       username,
-      //       email,
-      //       address,
-      //       phone,
-      //       website,
-      //       company,
-      //     }
-      //   }
-      return row
-    })
+    // data = data.map((row) => {
+    // Remove columns
+    // if (dataSource === POSTS_SOURCE) {
+    //   const { title, body, ...slice } = row
+    //   return slice
+    // } else if (dataSource === USERS_SOURCE) {
+    //   const { username, email, ...slice } = row
+    //   return slice
+    // }
+    // Add columns
+    //   _id++
+    //   if (dataSource === POSTS_SOURCE) {
+    //     const { userId, id, title, body } = row
+    //     return { userId, id, unId: _id, unaStringa: 'aa ' + row.id, title, body }
+    //   } else if (dataSource === USERS_SOURCE) {
+    //     const { id, name, username, email, address, phone, website, company } = row
+    //     return {
+    //       id,
+    //       name,
+    //       unId: _id,
+    //       unaStringa: `aa ${_id}`,
+    //       username,
+    //       email,
+    //       address,
+    //       phone,
+    //       website,
+    //       company,
+    //     }
+    //   }
+    //   return row
+    // })
     // if (dataSource === USERS_SOURCE) {
     //   // Add rows
     //   data.push({
@@ -790,17 +805,17 @@ class App extends React.Component<{}, AppState> {
   }
 
   getRibbonTablesDropdown() {
-    DATASOURCES.forEach((tableName) => {
+    DATASOURCES.forEach((dataSource) => {
       const config = (GC.Spread.Sheets as any).Designer.DefaultConfig
 
       //creo con la formattazione richiesta, un command per il click sul nome tabella
       const value = {
-        [tableName]: {
-          title: tableName,
-          text: tableName,
+        [dataSource]: {
+          title: dataSource,
+          text: dataSource,
           iconClass: 'ribbon-button-table',
           bigButton: false,
-          commandName: tableName,
+          commandName: dataSource,
           execute: async (context: any, propertyName: any, fontItalicChecked: any) => {
             const sheet = context.Spread.getActiveSheet()
 
@@ -808,12 +823,11 @@ class App extends React.Component<{}, AppState> {
               const row = sheet.getActiveRowIndex()
               const col = sheet.getActiveColumnIndex()
               // this.showModal()
-              const tableUniqueName = tableName + '_' + new Date().getTime()
-              this.fetchData(tableName).then(json => {
-                this.setTable(json, tableName, row, col, tableUniqueName, sheet, false, true)
+              const tableUniqueName = dataSource + '_' + new Date().getTime()
+              this.fetchData(dataSource).then((json) => {
+                this.setTable(json, dataSource, row, col, tableUniqueName, sheet)
+                this.updateIrionConfig(tableUniqueName, row, col, sheet.name(), dataSource)
               })
-
-       
             }
           },
         },
