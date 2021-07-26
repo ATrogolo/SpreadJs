@@ -37,6 +37,7 @@ interface Config {
 }
 
 type ICellButtonExtended = GC.Spread.Sheets.ICellButton & { id: number }
+type ICellRangeExtended = GC.Spread.Sheets.CellRange & { id: number }
 
 const SERVER_URL = 'https://jsonplaceholder.typicode.com'
 const POSTS_SOURCE = 'Posts'
@@ -66,7 +67,7 @@ class App extends React.Component<{}, AppState> {
     }
 
     this.state = {
-      designerMode: false,
+      designerMode: true,
       show: false,
       showModalConfigurator: false,
       buttonCaption: '',
@@ -116,18 +117,18 @@ class App extends React.Component<{}, AppState> {
           buttonCaption={this.state.buttonCaption}
         ></ModalCommandConfigurator>
         <div className="toolbar">
-          <button
+          {/* <button
             className={designerModeCssClass}
             onClick={() => this.setState({ designerMode: !this.state.designerMode })}
           >
             Designer Mode: {designerMode ? 'ON' : 'OFF'}
+          </button> */}
+          {/* {!designerMode && ( */}
+          {/* <> */}
+          <button className="export-config" onClick={this.exportToWB2}>
+            Export WB1 to WB2
           </button>
-          {!designerMode && (
-            <>
-              <button className="export-config" onClick={this.exportToWB2}>
-                Export WB1 to WB2
-              </button>
-              {/* <button
+          {/* <button
                 className="add-table"
                 onClick={() => {
                   const sheet = this.wb1?.getActiveSheet()
@@ -140,40 +141,40 @@ class App extends React.Component<{}, AppState> {
               >
                 Add table (15,1)
               </button> */}
-            </>
-          )}
+          {/* </> */}
+          {/* )} */}
         </div>
 
-        {(designerMode && (
+        {/* {(designerMode && (
           <Designer
             styleInfo={{ width: '100%', height: '100vh' }}
             designerInitialized={(designer: any) => this.initDesigner(designer.getWorkbook())}
             config={this.ribbonConfig}
           ></Designer>
-        )) || (
-          <>
-            <Designer
-              styleInfo={{ width: '100%', height: '65vh' }}
-              designerInitialized={(designer: any) => this.initSpread1(designer.getWorkbook())}
-              config={this.ribbonConfig}
-            ></Designer>
+        )) || ( */}
+        <>
+          <Designer
+            styleInfo={{ width: '100%', height: '65vh' }}
+            designerInitialized={(designer: any) => this.initSpread1(designer.getWorkbook())}
+            config={this.ribbonConfig}
+          ></Designer>
 
-            {/* <SpreadSheets
+          {/* <SpreadSheets
               hostStyle={this.hostStyle}
               name="WB1"
               workbookInitialized={(workBook) => this.initSpread1(workBook)}
             ></SpreadSheets> */}
-            <div id="statusBar"></div>
+          <div id="statusBar"></div>
 
-            <hr />
+          <hr />
 
-            <SpreadSheets
-              hostStyle={this.hostStyle}
-              name="WB2"
-              workbookInitialized={(workBook) => this.initSpread2(workBook)}
-            ></SpreadSheets>
-          </>
-        )}
+          <SpreadSheets
+            hostStyle={this.hostStyle}
+            name="WB2"
+            workbookInitialized={(workBook) => this.initSpread2(workBook)}
+          ></SpreadSheets>
+        </>
+        {/* )} */}
 
         <Modal show={this.state.show} onClose={this.hideModal}>
           <p>Modal</p>
@@ -186,6 +187,7 @@ class App extends React.Component<{}, AppState> {
     this.wb1 = workBook
     const sheet = workBook.getActiveSheet()
 
+    this.insertButtons(sheet)
     // Bind events
     this.bindEvents(this.wb1, sheet)
 
@@ -386,7 +388,7 @@ class App extends React.Component<{}, AppState> {
         // Please refer to the following update sample and let us know if you face any issues. sample: https://codesandbox.io/s/blue-fast-qb68d?file=/src/index.js
 
         // this.fitColumns(sheet, col, columnNumber)
-        // this.resizeColumns(sheet, col, columnNumber)
+        this.resizeColumns(sheet, col, columnNumber)
       } catch (error) {
         console.error(error)
 
@@ -519,13 +521,14 @@ class App extends React.Component<{}, AppState> {
     const row = sheet.getActiveRowIndex()
     const col = sheet.getActiveColumnIndex()
 
-    const cellType = new GC.Spread.Sheets.CellTypes.Button()
+    const cellType: any = new GC.Spread.Sheets.CellTypes.Button()
     cellType.buttonBackColor('#FFFF00')
     cellType.text('CellType Button')
+    cellType.id = id1
 
     // Insert cellType
-    const cell = sheet.getCell(row, col)
-    cell.tag(id1)
+    const cell = sheet.getCell(row, col) as ICellRangeExtended
+    // cell.tag(id1)
     cell.cellType(cellType)
 
     // Insert cellStyle
@@ -598,7 +601,7 @@ class App extends React.Component<{}, AppState> {
       configCommand: {
         title: 'config Command',
         text: 'Command',
-        iconClass: 'ribbon-button-buttoncelltype',
+        iconClass: 'ribbon-button-cellstates',
         bigButton: true,
         commandName: 'ribbonButtonButtonCellType',
         useButtonStyle: true,
@@ -619,19 +622,19 @@ class App extends React.Component<{}, AppState> {
               command: (sheet, row, col, option) => {
                 this.setState({ buttonCaption: 'ciao' })
                 console.log(sheet, row, col, option)
+
                 // Get Command from IrionConfig and fire it
                 this.showModalConfigurator()
 
-                console.log(document)
-                if (this.state.showModalConfigurator) {
-                  var fbx = new GC.Spread.Sheets.FormulaTextBox.FormulaTextBox(document.getElementById('formulaBar')!, {
-                    rangeSelectMode: true,
-                    absoluteReference: false,
-                  })
+                // if (this.state.showModalConfigurator) {
+                //   var fbx = new GC.Spread.Sheets.FormulaTextBox.FormulaTextBox(document.getElementById('formulaBar')!, {
+                //     rangeSelectMode: true,
+                //     absoluteReference: false,
+                //   })
 
-                  fbx.workbook(context.Spread)
-                  this.fbx = fbx
-                }
+                //   fbx.workbook(context.Spread)
+                //   this.fbx = fbx
+                // }
               },
             },
           ]
@@ -847,9 +850,8 @@ class App extends React.Component<{}, AppState> {
         if (cellType instanceof GC.Spread.Sheets.CellTypes.Button) {
           //   this.showModalConfigurator()
 
-          const cell = sheet.getCell(row, col)
-          const id = cell.tag()
-
+          const cell = sheet.getCellType(row, col)
+          const { id } = cell as any
           console.log('ButtonClicked', id)
 
           // Get Command from IrionConfig and trigger it
@@ -861,7 +863,7 @@ class App extends React.Component<{}, AppState> {
       const { oldValue, newValue, propertyName } = args
 
       if (propertyName === '[styleinfo]') {
-        if (oldValue.cellType && !newValue.cellType) {
+        if (oldValue?.cellType && !newValue?.cellType) {
           console.log('cellType Cleared')
         }
       }
