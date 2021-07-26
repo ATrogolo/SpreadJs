@@ -100,7 +100,7 @@ class App extends React.Component<{}, AppState> {
   }
 
   render() {
-    const { designerMode } = this.state
+    // const { designerMode } = this.state
     // const designerModeCssClass = 'designer-mode ' + (designerMode ? 'on' : 'off')
 
     return (
