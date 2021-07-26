@@ -130,7 +130,9 @@ class App extends React.Component<{}, AppState> {
                 onClick={() => {
                   const sheet = this.wb1?.getActiveSheet()
                   if (sheet) {
-                    this.setTable(POSTS_SOURCE, 1, 1, 'table2', sheet)
+                    this.fetchData(POSTS_SOURCE).then(json => {
+                      this.setTable(json, POSTS_SOURCE, 1, 1, 'table2', sheet,false,true)
+                    })
                   }
                 }}
               >
@@ -220,7 +222,10 @@ class App extends React.Component<{}, AppState> {
 
     // sheet.getRange(shiftRow + 3, 1, 1, 2).backColor('rgb(211, 211, 211)')
 
-    this.setTable(USERS_SOURCE, 10, 1, 'table1', sheet)
+    this.fetchData(USERS_SOURCE).then(json => {
+      this.setTable(json, USERS_SOURCE, 10, 1, 'table1', sheet,false,true)
+    })
+    
     workBook.resumePaint()
   }
 
@@ -237,7 +242,10 @@ class App extends React.Component<{}, AppState> {
     this.insertButtons(sheet)
     this.bindEvents(this.designerWb1, sheet)
 
-    this.setTable(POSTS_SOURCE, 5, 2, 'ds_wb_table1', sheet)
+
+    this.fetchData(POSTS_SOURCE).then(json => {
+      this.setTable(json, POSTS_SOURCE, 5, 2, 'ds_wb_table1', sheet)
+    })
   }
 
   exportConfig = (workbook?: GC.Spread.Sheets.Workbook, withBindings: boolean = true): Config => {
@@ -287,84 +295,95 @@ class App extends React.Component<{}, AppState> {
     this.wb2?.fromJSON(JSON.parse(JSON.stringify(config.spreadJs)), jsonOptions)
 
     setTimeout(() => {
+      const promises: Promise<any>[] = []
       this.irionConfig.forEach((tableConfig) => {
-        const { sheet: sheetName, row, col, dataSource, tableName } = tableConfig
+        const { dataSource } = tableConfig
 
-        const sheet: GC.Spread.Sheets.Worksheet =
-          this.wb2?.getSheetFromName(sheetName) ??
-          this.wb2?.addSheetTab(0, sheetName, GC.Spread.Sheets.SheetType.tableSheet)
+        promises.push(this.fetchData(dataSource))
+      })
 
+      Promise.all(promises).then((results: any[]) => {
         // Insert (import) table
-        this.setTable(dataSource, row, col, tableName, sheet, true)
+        results.forEach((json: any[], index) => {
+          const { sheet: sheetName, row, col, dataSource, tableName } = this.irionConfig[index]
+
+          const sheet: GC.Spread.Sheets.Worksheet =
+            this.wb2?.getSheetFromName(sheetName) ??
+            this.wb2?.addSheetTab(0, sheetName, GC.Spread.Sheets.SheetType.tableSheet)
+
+          this.setTable(json, dataSource, row, col, tableName, sheet, true)
+        })
       })
     }, DELAY)
   }
 
   setTable = (
+    json: any[],
     dataSource: string,
     row: number,
     col: number,
     tableName: string,
     currentSheet: GC.Spread.Sheets.Worksheet,
-    tweakData: boolean = false
+    tweakData: boolean = false,
+    updateIrionConfig: boolean = false  
   ) => {
     const sheet = currentSheet ?? this.wb1?.getActiveSheet()
 
     if (sheet) {
-      this.wb1?.suspendPaint()
-      this.wb2?.suspendPaint()
-      this.designerWb1?.suspendPaint()
+      // this.wb1?.suspendPaint()
+      // this.wb2?.suspendPaint()
+      // this.designerWb1?.suspendPaint()
 
-      this.fetchData(dataSource)
-        .then((json: any[]) => {
-          let data = dataSource === POSTS_SOURCE ? json.slice(0, 2) : json
+      let data = dataSource === POSTS_SOURCE ? json.slice(0, 2) : json
 
-          if (tweakData) {
-            data = this.tweakData(data, dataSource)
-          }
+      // if (tweakData) {
+      //   data = this.tweakData(data, dataSource)
+      // }
 
-          const rowNumber = data.length
-          const columnNames = Object.keys(data[0])
-          const columnNumber = columnNames.length
+      const rowNumber = data.length
+      const columnNames = Object.keys(data[0])
+      const columnNumber = columnNames.length
 
-          let table = sheet.tables.find(row, col)
-          if (table == null) {
-            const tableUniqueName = tableName + '_' + new Date().getTime()
-            table = sheet.tables.add(tableUniqueName, row, col, rowNumber, columnNumber)
+      let table = sheet.tables.findByName(tableName)
+      if (table == null) {
 
-            console.log('Sto inserendo la tabella ', tableUniqueName)
-          } else {
-            console.warn(
-              'La tabella è già definita nel foglio. Probabilmente è stata importata una configurazione precedente'
-            )
-          }
+        table = sheet.tables.add(tableName, row, col, rowNumber, columnNumber)
 
-          const columns: any[] = []
-          columnNames.forEach((columnName, index) => {
-            const column = new GC.Spread.Sheets.Tables.TableColumn(index, columnName)
+        console.log('Sto inserendo la tabella ', tableName)
+      } else {
+        console.warn(
+          'La tabella è già definita nel foglio. Probabilmente è stata importata una configurazione precedente'
+        )
+      }
 
-            columns.push(column)
-          })
+      const columns: any[] = []
+      columnNames.forEach((columnName, index) => {
+        const column = new GC.Spread.Sheets.Tables.TableColumn(index, columnName)
 
-          table.autoGenerateColumns(true) // nonsense but it works when removing columns
-          table.bind(columns, '', data)
+        columns.push(column)
+      })
 
-          this.updateIrionConfig(table.name(), row, col, sheet.name(), dataSource)
-          // this.fitColumns(sheet, col, columnNumber)
-          this.resizeColumns(sheet, col, columnNumber)
-        })
-        .catch((error) => {
-          console.error(error)
+      table.autoGenerateColumns(true) // nonsense but it works when removing columns
+      table.bind(columns, '', data)
 
-          this.wb1?.resumePaint()
-          this.wb2?.resumePaint()
-          this.designerWb1?.resumePaint()
-        })
-        .finally(() => {
-          this.wb1?.resumePaint()
-          this.wb2?.resumePaint()
-          this.designerWb1?.resumePaint()
-        })
+      if(updateIrionConfig ){
+        this.updateIrionConfig(table.name(), row, col, sheet.name(), dataSource)
+      }
+      // this.fitColumns(sheet, col, columnNumber)
+      this.resizeColumns(sheet, col, columnNumber)
+
+      // .catch((error) => {
+      //   console.error(error)
+
+      //   // this.wb1?.resumePaint()
+      //   // this.wb2?.resumePaint()
+      //   // this.designerWb1?.resumePaint()
+      // })
+      // .finally(() => {
+      //   // this.wb1?.resumePaint()
+      //   // this.wb2?.resumePaint()
+      //   // this.designerWb1?.resumePaint()
+      // })
     }
   }
 
@@ -374,7 +393,7 @@ class App extends React.Component<{}, AppState> {
 
   updateIrionConfig = (tableName: string, row: number, col: number, sheet: string, dataSource: string) => {
     const index = this.irionConfig.findIndex(
-      (item) => item.sheet === sheet && item.row === row && item.col === col // && item.tableName === tableName
+      (item) => item.sheet === sheet   && item.tableName === tableName // && item.row === row && item.col === col
     )
     const tableConfig = {
       tableName,
@@ -789,8 +808,12 @@ class App extends React.Component<{}, AppState> {
               const row = sheet.getActiveRowIndex()
               const col = sheet.getActiveColumnIndex()
               // this.showModal()
+              const tableUniqueName = tableName + '_' + new Date().getTime()
+              this.fetchData(tableName).then(json => {
+                this.setTable(json, tableName, row, col, tableUniqueName, sheet, false, true)
+              })
 
-              this.setTable(tableName, row, col, tableName, sheet)
+       
             }
           },
         },
