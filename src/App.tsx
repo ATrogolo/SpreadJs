@@ -343,9 +343,9 @@ class App extends React.Component<{}, AppState> {
     const sheet = currentSheet ?? this.wb1?.getActiveSheet()
 
     if (sheet) {
-      // this.wb1?.suspendPaint()
-      // this.wb2?.suspendPaint()
-      // this.designerWb1?.suspendPaint()
+      this.wb1?.suspendPaint()
+      this.wb2?.suspendPaint()
+      this.designerWb1?.suspendPaint()
       try {
         let data = dataSource === POSTS_SOURCE || dataSource === COMMENTS_SOURCE ? json.slice(0, 2) : json
 
@@ -395,12 +395,11 @@ class App extends React.Component<{}, AppState> {
         // this.wb1?.resumePaint()
         // this.wb2?.resumePaint()
         // this.designerWb1?.resumePaint()
+      } finally {
+        this.wb1?.resumePaint()
+        this.wb2?.resumePaint()
+        this.designerWb1?.resumePaint()
       }
-      // .finally(() => {
-      //   // this.wb1?.resumePaint()
-      //   // this.wb2?.resumePaint()
-      //   // this.designerWb1?.resumePaint()
-      // })
     }
   }
 
@@ -479,39 +478,28 @@ class App extends React.Component<{}, AppState> {
     //   }
     //   return row
     // })
-    // if (dataSource === USERS_SOURCE) {
-    //   // Add rows
-    //   data.push({
-    //     id: 12,
-    //     name: 'Carmine',
-    //     username: 'Car',
-    //     email: 'asd@asd.it',
-    //   })
-    //   data.push({
-    //     id: 13,
-    //     name: 'Carmine',
-    //     username: 'Car',
-    //     email: 'asd@asd.it',
-    //   })
-    //   data.push({
-    //     id: 14,
-    //     name: 'Carmine',
-    //     username: 'Car',
-    //     email: 'asd@asd.it',
-    //   })
-    //   data.push({
-    //     id: 15,
-    //     name: 'Carmine',
-    //     username: 'Car',
-    //     email: 'asd@asd.it',
-    //   })
-    //   data.push({
-    //     id: 16,
-    //     name: 'Carmine',
-    //     username: 'Car',
-    //     email: 'asd@asd.it',
-    //   })
-    // }
+
+    const size = 2
+    for (let i = 0; i < size; i++) {
+      // if (dataSource === USERS_SOURCE) {
+      //   return data.slice(0, 5)
+      //   //   data.push({
+      //   //     id: i + 50,
+      //   //     name: 'Carmine',
+      //   //     username: 'Car',
+      //   //     email: 'asd@asd.it',
+      //   //   })
+      //   // } else
+      if (dataSource === POSTS_SOURCE) {
+        // return data.slice(0, 1)
+        data.push({
+          userId: i + 50,
+          id: i + 50,
+          title: 'qui est esse',
+          body: 'qui est esse',
+        })
+      }
+    }
 
     return data
   }
