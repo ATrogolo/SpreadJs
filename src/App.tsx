@@ -10,6 +10,8 @@ import '@grapecity/spread-sheets/styles/gc.spread.sheets.excel2013white.css'
 import './App.css'
 import { Modal } from './Modal'
 import { ModalCommandConfigurator } from './ModalCommandConfigurator'
+import AlertAddAlert from 'material-ui/svg-icons/alert/add-alert'
+import { Alert } from 'react-native'
 
 // GC.Spread.Sheets.LicenseKey =
 //   'GrapeCity-Internal-Use-Only,362369852286222#B0vRARPV5NrR6LUhmN8YGe4k5LhlkbhJWaZVkSmBjellXUF5URz46a4N6RhhDNadjW7c6d4VES7MURnlHVXd5V7gnVwA7YxIkeYNXMwxGdqVzUlhVMzIUWxdXTwgTUJZlNvImdBJ4SW5GTExEezhVOOxWb7R7VKF7TaFnWYJ4L6c7NoN4RRNGSXVEaKJDTFVTYCNmMKNlUZNFMjNzSxgHRwhTMwQ4QsRVWlFTMjFmdUZjYyUXZRR6bXV6RBt6NDBHV8Z5drdWZtRUbCJHeZRFO8F6R5AzM4ljSXNjQ9gTMqBHah5UTKZWT6h6YihXU8Q6V7ckI0IyUiwiIyUUNzAjQwcjI0ICSiwCN9EzM9kjM4YTM0IicfJye#4Xfd5nIFVUSWJiOiMkIsICNx8idgAyUKBCZhVmcwNlI0IiTis7W0ICZyBlIsISM4ETNyADIxAjMxAjMwIjI0ICdyNkIsIybp9ie4lGbit6YhR7cuoCLt36YukHdpNWZwFmcn9iKiojIz5GRiwiI9RXaDVGchJ7RiojIh94QiwiIyIjM6gjMyUDO9YzMyYzMiojIklkIs4XZzxWYmpjIyNHZisnOiwmbBJye0ICRiwiI34TQQFUM6NlUvFjQ6J5dRJzbk3Ca4U6N8c5MxNmQ5JFRW3EWJxEayhFZ4FncPJndZRUahRzcFdnZGZUOpRGeSRVWiplUy8EWh9kV8gjTip5bNpkSSFGWvcVMYVTURlHcHVXMwJjU' as any
@@ -234,6 +236,7 @@ class App extends React.Component<{}, AppState> {
 
     this.insertButtons(sheet)
     this.bindEvents(this.designerWb1, sheet)
+
 
     // this.fetchData(POSTS_SOURCE).then((json) => {
     //   this.setTable(json, POSTS_SOURCE, 5, 2, 'ds_wb_table1', sheet, false, true)
@@ -596,42 +599,54 @@ class App extends React.Component<{}, AppState> {
 
         execute: async (context: any, propertyName: any, fontItalicChecked: any) => {
           var activeSheet = context.Spread.getActiveSheet()
-          var basicButttonStyle = new GC.Spread.Sheets.Style()
-          basicButttonStyle.cellButtons = [
-            //configuro come deve essere il bottone
-            {
-              caption: 'enable',
-              useButtonStyle: true,
-              // enabled: true,
-              width: undefined!,
-              hoverBackColor: 'deepskyblue',
-              buttonBackColor: 'green',
-              //configuro cosa deve accadere al click in griglia
-              command: (sheet, row, col, option) => {
-                this.setState({ buttonCaption: 'ciao' })
-                console.log(sheet, row, col, option)
+          // var basicButttonStyle = new GC.Spread.Sheets.Style()
+          // basicButttonStyle.cellButtons = [
+          //   //configuro come deve essere il bottone
+          //   {
+          //     caption: 'enable',
+          //     useButtonStyle: true,
+          //     // enabled: true,
+          //     width: undefined!,
+          //     hoverBackColor: 'deepskyblue',
+          //     buttonBackColor: 'green',
+          //     //configuro cosa deve accadere al click in griglia
+          //     command: (sheet, row, col, option) => {
+          //       this.setState({ buttonCaption: 'ciao' })
+          //       console.log(sheet, row, col, option)
 
-                // Get Command from IrionConfig and fire it
-                this.showModalConfigurator()
+          //       // Get Command from IrionConfig and fire it
+          //       this.showModalConfigurator()
 
-                // if (this.state.showModalConfigurator) {
-                //   var fbx = new GC.Spread.Sheets.FormulaTextBox.FormulaTextBox(document.getElementById('formulaBar')!, {
-                //     rangeSelectMode: true,
-                //     absoluteReference: false,
-                //   })
+          //       // if (this.state.showModalConfigurator) {
+          //       //   var fbx = new GC.Spread.Sheets.FormulaTextBox.FormulaTextBox(document.getElementById('formulaBar')!, {
+          //       //     rangeSelectMode: true,
+          //       //     absoluteReference: false,
+          //       //   })
 
-                //   fbx.workbook(context.Spread)
-                //   this.fbx = fbx
-                // }
-              },
-            },
-          ]
-          //pesco la cella selezionata
+          //       //   fbx.workbook(context.Spread)
+          //       //   this.fbx = fbx
+          //       // }
+          //     },
+          //   },
+          // ]
+          // //pesco la cella selezionata
+          // const row = activeSheet.getActiveRowIndex()
+          // const col = activeSheet.getActiveColumnIndex()
+
+          // activeSheet.setText(row, col)
+          // activeSheet.setStyle(row, col, basicButttonStyle)
           const row = activeSheet.getActiveRowIndex()
           const col = activeSheet.getActiveColumnIndex()
+          const cellType = activeSheet.getCellType(row, col)
+          if (cellType instanceof GC.Spread.Sheets.CellTypes.Button) {
+            //bisogna aggiungere la logica dell'id
+            // se c'è un id allora apri la modale ? se esiste una configurazione esistente mostrala in modale : mostra modale da configurare
+            //se non esiste un id allora fai finta di nulla e lascia fare al default
+            this.showModalConfigurator()
+          }else{
+            window.alert("Devi selezionare un bottone");
 
-          activeSheet.setText(row, col)
-          activeSheet.setStyle(row, col, basicButttonStyle)
+          }
         },
       },
       editTable: {
@@ -842,6 +857,10 @@ class App extends React.Component<{}, AppState> {
           const { id } = cell as any
           console.log('ButtonClicked', id)
 
+          if (cellType instanceof GC.Spread.Sheets.CellTypes.Button) {
+            //se esiste una configurazione per quell'id esegui il command
+            //altrimenti nulla default
+          }
           // Get Command from IrionConfig and trigger it
         }
       }
