@@ -596,7 +596,6 @@ class App extends React.Component<{}, AppState> {
         bigButton: true,
         commandName: 'ribbonButtonButtonCellType',
         useButtonStyle: true,
-
         execute: async (context: any, propertyName: any, fontItalicChecked: any) => {
           var activeSheet = context.Spread.getActiveSheet()
           // var basicButttonStyle = new GC.Spread.Sheets.Style()
@@ -639,6 +638,9 @@ class App extends React.Component<{}, AppState> {
           const col = activeSheet.getActiveColumnIndex()
           const cellType = activeSheet.getCellType(row, col)
           if (cellType instanceof GC.Spread.Sheets.CellTypes.Button) {
+
+            const cellType = activeSheet.getCellType(row, col)  as any
+            cellType.id  = "ciao"
             //bisogna aggiungere la logica dell'id
             // se c'è un id allora apri la modale ? se esiste una configurazione esistente mostrala in modale : mostra modale da configurare
             //se non esiste un id allora fai finta di nulla e lascia fare al default
