@@ -479,27 +479,27 @@ class App extends React.Component<{}, AppState> {
     //   return row
     // })
 
-    const size = 2
-    for (let i = 0; i < size; i++) {
-      // if (dataSource === USERS_SOURCE) {
-      //   return data.slice(0, 5)
-      //   //   data.push({
-      //   //     id: i + 50,
-      //   //     name: 'Carmine',
-      //   //     username: 'Car',
-      //   //     email: 'asd@asd.it',
-      //   //   })
-      //   // } else
-      if (dataSource === POSTS_SOURCE) {
-        // return data.slice(0, 1)
-        data.push({
-          userId: i + 50,
-          id: i + 50,
-          title: 'qui est esse',
-          body: 'qui est esse',
-        })
-      }
-    }
+    // const size = 2
+    // for (let i = 0; i < size; i++) {
+    //   // if (dataSource === USERS_SOURCE) {
+    //   //   return data.slice(0, 5)
+    //   //   //   data.push({
+    //   //   //     id: i + 50,
+    //   //   //     name: 'Carmine',
+    //   //   //     username: 'Car',
+    //   //   //     email: 'asd@asd.it',
+    //   //   //   })
+    //   //   // } else
+    //   if (dataSource === POSTS_SOURCE) {
+    //     // return data.slice(0, 1)
+    //     data.push({
+    //       userId: i + 50,
+    //       id: i + 50,
+    //       title: 'qui est esse',
+    //       body: 'qui est esse',
+    //     })
+    //   }
+    // }
 
     return data
   }
