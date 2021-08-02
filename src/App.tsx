@@ -175,6 +175,9 @@ class App extends React.Component<{}, AppState> {
             name="WB2"
             workbookInitialized={(workBook) => this.initSpread2(workBook)}
           ></SpreadSheets>
+                <button className="export-config" onClick={()=>this.exportjson(this.wb2)}>
+            Export WB2 jsonConfig
+          </button>
         </>
         {/* )} */}
 
@@ -184,6 +187,9 @@ class App extends React.Component<{}, AppState> {
       </>
     )
   }
+
+
+
 
   initSpread1(workBook: GC.Spread.Sheets.Workbook) {
     this.wb1 = workBook
@@ -241,6 +247,15 @@ class App extends React.Component<{}, AppState> {
     // this.fetchData(POSTS_SOURCE).then((json) => {
     //   this.setTable(json, POSTS_SOURCE, 5, 2, 'ds_wb_table1', sheet, false, true)
     // })
+  }
+
+  exportjson(workbook?: GC.Spread.Sheets.Workbook){
+    const serializationOption = {}
+    const json = workbook?.toJSON(serializationOption)
+
+
+    const exportConfig: Config = { spreadJs: { ...json }, irionConfig: [] }
+    console.log('json', exportConfig)
   }
 
   exportConfig = (workbook?: GC.Spread.Sheets.Workbook, withBindings: boolean = true): Config => {
@@ -449,8 +464,8 @@ class App extends React.Component<{}, AppState> {
   }
 
   tweakData = (data: any[], dataSource: string) => {
-    // let _id = 0
-    // data = data.map((row) => {
+    let _id = 0
+    data = data.map((row) => {
     // Remove columns
     // if (dataSource === POSTS_SOURCE) {
     //   const { title, body, ...slice } = row
@@ -460,49 +475,49 @@ class App extends React.Component<{}, AppState> {
     //   return slice
     // }
     // Add columns
-    //   _id++
-    //   if (dataSource === POSTS_SOURCE) {
-    //     const { userId, id, title, body } = row
-    //     return { userId, id, unId: _id, unaStringa: 'aa ' + row.id, title, body }
-    //   } else if (dataSource === USERS_SOURCE) {
-    //     const { id, name, username, email, address, phone, website, company } = row
-    //     return {
-    //       id,
-    //       name,
-    //       unId: _id,
-    //       unaStringa: `aa ${_id}`,
-    //       username,
-    //       email,
-    //       address,
-    //       phone,
-    //       website,
-    //       company,
-    //     }
-    //   }
-    //   return row
-    // })
+      _id++
+      if (dataSource === POSTS_SOURCE) {
+        const { userId, id, title, body } = row
+        return { userId, id, unId: _id, unaStringa: 'aa ' + row.id, title, body }
+      } else if (dataSource === USERS_SOURCE) {
+        const { id, name, username, email, address, phone, website, company } = row
+        return {
+          id,
+          name,
+          unId: _id,
+          unaStringa: `aa ${_id}`,
+          username,
+          email,
+          address,
+          phone,
+          website,
+          company,
+        }
+      }
+      return row
+    })
 
-    // const size = 2
-    // for (let i = 0; i < size; i++) {
-    //   // if (dataSource === USERS_SOURCE) {
-    //   //   return data.slice(0, 5)
-    //   //   //   data.push({
-    //   //   //     id: i + 50,
-    //   //   //     name: 'Carmine',
-    //   //   //     username: 'Car',
-    //   //   //     email: 'asd@asd.it',
-    //   //   //   })
-    //   //   // } else
-    //   if (dataSource === POSTS_SOURCE) {
-    //     // return data.slice(0, 1)
-    //     data.push({
-    //       userId: i + 50,
-    //       id: i + 50,
-    //       title: 'qui est esse',
-    //       body: 'qui est esse',
-    //     })
-    //   }
-    // }
+    const size = 2
+    for (let i = 0; i < size; i++) {
+      // if (dataSource === USERS_SOURCE) {
+      //   return data.slice(0, 5)
+      //   //   data.push({
+      //   //     id: i + 50,
+      //   //     name: 'Carmine',
+      //   //     username: 'Car',
+      //   //     email: 'asd@asd.it',
+      //   //   })
+      //   // } else
+      if (dataSource === POSTS_SOURCE) {
+        // return data.slice(0, 1)
+        data.push({
+          userId: i + 50,
+          id: i + 50,
+          title: 'qui est esse',
+          body: 'qui est esse',
+        })
+      }
+    }
 
     return data
   }
@@ -664,10 +679,12 @@ class App extends React.Component<{}, AppState> {
 
           const table = activeSheet.tables.find(row, col)
           const isTable = table != null
-
+          //oltre questo controllo, andrebbe poi successivamente fatto un check sul fatto che sia una tabella con binding 
           if (isTable) {
             // Open modal and edit data
             this.showModal()
+          }else{
+            console.log("Vedi che se non clicchi una tabella non ti faccio aprire nulla!")
           }
         },
       },
