@@ -175,7 +175,7 @@ class App extends React.Component<{}, AppState> {
             name="WB2"
             workbookInitialized={(workBook) => this.initSpread2(workBook)}
           ></SpreadSheets>
-                <button className="export-config" onClick={()=>this.exportjson(this.wb2)}>
+          <button className="export-config" onClick={() => this.exportJson(this.wb2)}>
             Export WB2 jsonConfig
           </button>
         </>
@@ -187,9 +187,6 @@ class App extends React.Component<{}, AppState> {
       </>
     )
   }
-
-
-
 
   initSpread1(workBook: GC.Spread.Sheets.Workbook) {
     this.wb1 = workBook
@@ -243,16 +240,14 @@ class App extends React.Component<{}, AppState> {
     this.insertButtons(sheet)
     this.bindEvents(this.designerWb1, sheet)
 
-
     // this.fetchData(POSTS_SOURCE).then((json) => {
     //   this.setTable(json, POSTS_SOURCE, 5, 2, 'ds_wb_table1', sheet, false, true)
     // })
   }
 
-  exportjson(workbook?: GC.Spread.Sheets.Workbook){
+  exportJson(workbook?: GC.Spread.Sheets.Workbook) {
     const serializationOption = {}
     const json = workbook?.toJSON(serializationOption)
-
 
     const exportConfig: Config = { spreadJs: { ...json }, irionConfig: [] }
     console.log('json', exportConfig)
@@ -369,7 +364,6 @@ class App extends React.Component<{}, AppState> {
 
         if (tweakData) {
           data = this.tweakData(data, dataSource)
-          sheet.setValue(8,1,3)
         }
 
         const rowNumber = data.length
@@ -465,60 +459,60 @@ class App extends React.Component<{}, AppState> {
   }
 
   tweakData = (data: any[], dataSource: string) => {
-    let _id = 0
-    data = data.map((row) => {
-    // Remove columns
-    // if (dataSource === POSTS_SOURCE) {
-    //   const { title, body, ...slice } = row
-    //   return slice
-    // } else if (dataSource === USERS_SOURCE) {
-    //   const { username, email, ...slice } = row
-    //   return slice
-    // }
-    // Add columns
-      _id++
-      if (dataSource === POSTS_SOURCE) {
-        const { userId, id, title, body } = row
-        return { userId, id, unId: _id, unaStringa: 'aa ' + row.id, title, body }
-      } else if (dataSource === USERS_SOURCE) {
-        const { id, name, username, email, address, phone, website, company } = row
-        return {
-          id,
-          name,
-          unId: _id,
-          unaStringa: `aa ${_id}`,
-          username,
-          email,
-          address,
-          phone,
-          website,
-          company,
-        }
-      }
-      return row
-    })
+    // let _id = 0
+    // data = data.map((row) => {
+    //   // Remove columns
+    //   // if (dataSource === POSTS_SOURCE) {
+    //   //   const { title, body, ...slice } = row
+    //   //   return slice
+    //   // } else if (dataSource === USERS_SOURCE) {
+    //   //   const { username, email, ...slice } = row
+    //   //   return slice
+    //   // }
+    //   // Add columns
+    //   _id++
+    //   if (dataSource === POSTS_SOURCE) {
+    //     const { userId, id, title, body } = row
+    //     return { userId, id, unId: _id, unaStringa: 'aa ' + row.id, title, body }
+    //   } else if (dataSource === USERS_SOURCE) {
+    //     const { id, name, username, email, address, phone, website, company } = row
+    //     return {
+    //       id,
+    //       name,
+    //       unId: _id,
+    //       unaStringa: `aa ${_id}`,
+    //       username,
+    //       email,
+    //       address,
+    //       phone,
+    //       website,
+    //       company,
+    //     }
+    //   }
+    //   return row
+    // })
 
-    const size = 2
-    for (let i = 0; i < size; i++) {
-      // if (dataSource === USERS_SOURCE) {
-      //   return data.slice(0, 5)
-      //   //   data.push({
-      //   //     id: i + 50,
-      //   //     name: 'Carmine',
-      //   //     username: 'Car',
-      //   //     email: 'asd@asd.it',
-      //   //   })
-      //   // } else
-      if (dataSource === POSTS_SOURCE) {
-        // return data.slice(0, 1)
-        data.push({
-          userId: i + 50,
-          id: i + 50,
-          title: 'qui est esse',
-          body: 'qui est esse',
-        })
-      }
-    }
+    // const size = 2
+    // for (let i = 0; i < size; i++) {
+    //   // if (dataSource === USERS_SOURCE) {
+    //   //   return data.slice(0, 5)
+    //   //   //   data.push({
+    //   //   //     id: i + 50,
+    //   //   //     name: 'Carmine',
+    //   //   //     username: 'Car',
+    //   //   //     email: 'asd@asd.it',
+    //   //   //   })
+    //   //   // } else
+    //   if (dataSource === POSTS_SOURCE) {
+    //     // return data.slice(0, 1)
+    //     data.push({
+    //       userId: i + 50,
+    //       id: i + 50,
+    //       title: 'qui est esse',
+    //       body: 'qui est esse',
+    //     })
+    //   }
+    // }
 
     return data
   }
@@ -571,7 +565,7 @@ class App extends React.Component<{}, AppState> {
   getRibbonConfig = () => {
     // config1.getCommand().cellType.subCommands.push("commandWindosButtonConfiguration")
     const config = (GC.Spread.Sheets as any).Designer.DefaultConfig
-    const a  = (GC.Spread.Sheets as any).Designer
+    const a = (GC.Spread.Sheets as any).Designer
     config.commandMap = {
       saveData: {
         title: 'Save data to server',
@@ -585,14 +579,14 @@ class App extends React.Component<{}, AppState> {
           console.log('Save Action', config)
         },
       },
-      listTable: {
+      addNewBinding: {
         bigButton: true,
-        commandName: 'listTable',
+        commandName: 'addNewBinding',
         iconClass: 'ribbon-button-table',
         subCommands: DATASOURCES,
         length: DATASOURCES.length,
-        text: 'DataSources',
-        title: 'DataSources',
+        text: 'Add New',
+        title: 'Add New',
         type: 'dropdown',
       },
       listExport: {
@@ -654,25 +648,23 @@ class App extends React.Component<{}, AppState> {
           const col = activeSheet.getActiveColumnIndex()
           const cellType = activeSheet.getCellType(row, col)
           if (cellType instanceof GC.Spread.Sheets.CellTypes.Button) {
-
-            const cellType = activeSheet.getCellType(row, col)  as any
-            cellType.id  = "ciao"
+            const cellType = activeSheet.getCellType(row, col) as any
+            cellType.id = 'ciao'
             //bisogna aggiungere la logica dell'id
             // se c'è un id allora apri la modale ? se esiste una configurazione esistente mostrala in modale : mostra modale da configurare
             //se non esiste un id allora fai finta di nulla e lascia fare al default
             this.showModalConfigurator()
-          }else{
-            window.alert("Devi selezionare un bottone");
-
+          } else {
+            window.alert('Devi selezionare un bottone')
           }
         },
       },
-      editTable: {
-        title: 'Edit table',
-        text: 'Edit table',
+      editBinding: {
+        title: 'Edit',
+        text: 'Edit',
         iconClass: 'ribbon-button-sheetgeneral',
         bigButton: 'true',
-        commandName: 'EditTable',
+        commandName: 'editBinding',
         execute: async (context: any, propertyName: any, fontItalicChecked: any) => {
           const activeSheet: GC.Spread.Sheets.Worksheet = context.Spread.getActiveSheet()
           const row = activeSheet.getActiveRowIndex()
@@ -680,27 +672,50 @@ class App extends React.Component<{}, AppState> {
 
           const table = activeSheet.tables.find(row, col)
           const isTable = table != null
-          //oltre questo controllo, andrebbe poi successivamente fatto un check sul fatto che sia una tabella con binding 
+          //oltre questo controllo, andrebbe poi successivamente fatto un check sul fatto che sia una tabella con binding
           if (isTable) {
             // Open modal and edit data
             this.showModal()
-          }else{
-            console.log("Vedi che se non clicchi una tabella non ti faccio aprire nulla!")
+          } else {
+            console.warn('La cella selezionata non appartiene ad una tabella!')
           }
         },
       },
-      tableBinded: {
-        title: 'Table Binded',
-        text: 'Table Binded',
+      showBindings: {
+        title: 'Show all',
+        text: 'Show all',
         iconClass: 'ribbon-button-celltype',
         bigButton: 'true',
-        commandName: 'tableBinded',
+        commandName: 'showBindings',
         execute: async (context: any, propertyName: any, fontItalicChecked: any) => {
           const activeSheet: GC.Spread.Sheets.Worksheet = context.Spread.getActiveSheet()
           //finestra con elenco tabelle inserite bindate
-            this.showModal()
-
+          this.showModal()
         },
+      },
+      addCompColumn: {
+        title: 'Add',
+        text: 'Add',
+        iconClass: 'ribbon-button-table',
+        bigButton: 'true',
+        commandName: 'addCompColumn',
+        execute: async (context: any, propertyName: any, fontItalicChecked: any) => {},
+      },
+      editCompColumn: {
+        title: 'Edit',
+        text: 'Edit',
+        iconClass: 'ribbon-button-sheetgeneral',
+        bigButton: 'true',
+        commandName: 'editCompColumn',
+        execute: async (context: any, propertyName: any, fontItalicChecked: any) => {},
+      },
+      delCompColumn: {
+        title: 'Remove',
+        text: 'Remove',
+        iconClass: 'ribbon-button-clear-celltype',
+        bigButton: 'true',
+        commandName: 'delCompColumn',
+        execute: async (context: any, propertyName: any, fontItalicChecked: any) => {},
       },
     }
 
@@ -738,7 +753,7 @@ class App extends React.Component<{}, AppState> {
         element.buttonGroups.push(
           {
             label: 'Save Data',
-            thumbnailClass: 'ribbon-thumbnail-save',
+            // thumbnailClass: 'ribbon-thumbnail-save',
             commandGroup: {
               children: [
                 {
@@ -749,20 +764,20 @@ class App extends React.Component<{}, AppState> {
             },
           },
           {
-            label: 'Table Bind',
-            thumbnailClass: 'ribbon-thumbnail-viewport',
+            label: 'Bindings',
+            // thumbnailClass: 'ribbon-thumbnail-viewport',
             commandGroup: {
               children: [
                 {
-                  direction: 'vertical',
-                  commands: ['listTable'],
+                  direction: 'horizontal',
+                  commands: ['addNewBinding', 'editBinding', 'showBindings'],
                 },
               ],
             },
           },
           {
             label: 'Export',
-            thumbnailClass: 'ribbon-thumbnail-viewport',
+            // thumbnailClass: 'ribbon-thumbnail-viewport',
             commandGroup: {
               children: [
                 {
@@ -774,7 +789,7 @@ class App extends React.Component<{}, AppState> {
           },
           {
             label: 'Config Command',
-            thumbnailClass: 'ribbon-thumbnail-save',
+            // thumbnailClass: 'ribbon-thumbnail-save',
             commandGroup: {
               children: [
                 {
@@ -785,25 +800,13 @@ class App extends React.Component<{}, AppState> {
             },
           },
           {
-            label: 'Edit Table',
-            thumbnailClass: 'ribbon-thumbnail-save',
+            label: 'Computed Columns',
+            // thumbnailClass: 'ribbon-thumbnail-save',
             commandGroup: {
               children: [
                 {
-                  direction: 'vertical',
-                  commands: ['editTable'],
-                },
-              ],
-            },
-          }, 
-          {
-            label: 'Table Binded',
-            thumbnailClass: 'ribbon-thumbnail-save',
-            commandGroup: {
-              children: [
-                {
-                  direction: 'vertical',
-                  commands: ['tableBinded'],
+                  direction: 'horizontal',
+                  commands: ['addCompColumn', 'editCompColumn', 'delCompColumn'],
                 },
               ],
             },
