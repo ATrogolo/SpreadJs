@@ -369,6 +369,7 @@ class App extends React.Component<{}, AppState> {
 
         if (tweakData) {
           data = this.tweakData(data, dataSource)
+          sheet.setValue(8,1,3)
         }
 
         const rowNumber = data.length
@@ -570,7 +571,7 @@ class App extends React.Component<{}, AppState> {
   getRibbonConfig = () => {
     // config1.getCommand().cellType.subCommands.push("commandWindosButtonConfiguration")
     const config = (GC.Spread.Sheets as any).Designer.DefaultConfig
-
+    const a  = (GC.Spread.Sheets as any).Designer
     config.commandMap = {
       saveData: {
         title: 'Save data to server',
@@ -688,6 +689,19 @@ class App extends React.Component<{}, AppState> {
           }
         },
       },
+      tableBinded: {
+        title: 'Table Binded',
+        text: 'Table Binded',
+        iconClass: 'ribbon-button-celltype',
+        bigButton: 'true',
+        commandName: 'tableBinded',
+        execute: async (context: any, propertyName: any, fontItalicChecked: any) => {
+          const activeSheet: GC.Spread.Sheets.Worksheet = context.Spread.getActiveSheet()
+          //finestra con elenco tabelle inserite bindate
+            this.showModal()
+
+        },
+      },
     }
 
     //genero la lista delle tabelle per il ribbon e relative azioni
@@ -778,6 +792,18 @@ class App extends React.Component<{}, AppState> {
                 {
                   direction: 'vertical',
                   commands: ['editTable'],
+                },
+              ],
+            },
+          }, 
+          {
+            label: 'Table Binded',
+            thumbnailClass: 'ribbon-thumbnail-save',
+            commandGroup: {
+              children: [
+                {
+                  direction: 'vertical',
+                  commands: ['tableBinded'],
                 },
               ],
             },
