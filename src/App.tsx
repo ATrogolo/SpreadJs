@@ -10,8 +10,6 @@ import '@grapecity/spread-sheets/styles/gc.spread.sheets.excel2013white.css'
 import './App.css'
 import { Modal } from './Modal'
 import { ModalCommandConfigurator } from './ModalCommandConfigurator'
-import AlertAddAlert from 'material-ui/svg-icons/alert/add-alert'
-import { Alert } from 'react-native'
 
 // GC.Spread.Sheets.LicenseKey =
 //   'GrapeCity-Internal-Use-Only,362369852286222#B0vRARPV5NrR6LUhmN8YGe4k5LhlkbhJWaZVkSmBjellXUF5URz46a4N6RhhDNadjW7c6d4VES7MURnlHVXd5V7gnVwA7YxIkeYNXMwxGdqVzUlhVMzIUWxdXTwgTUJZlNvImdBJ4SW5GTExEezhVOOxWb7R7VKF7TaFnWYJ4L6c7NoN4RRNGSXVEaKJDTFVTYCNmMKNlUZNFMjNzSxgHRwhTMwQ4QsRVWlFTMjFmdUZjYyUXZRR6bXV6RBt6NDBHV8Z5drdWZtRUbCJHeZRFO8F6R5AzM4ljSXNjQ9gTMqBHah5UTKZWT6h6YihXU8Q6V7ckI0IyUiwiIyUUNzAjQwcjI0ICSiwCN9EzM9kjM4YTM0IicfJye#4Xfd5nIFVUSWJiOiMkIsICNx8idgAyUKBCZhVmcwNlI0IiTis7W0ICZyBlIsISM4ETNyADIxAjMxAjMwIjI0ICdyNkIsIybp9ie4lGbit6YhR7cuoCLt36YukHdpNWZwFmcn9iKiojIz5GRiwiI9RXaDVGchJ7RiojIh94QiwiIyIjM6gjMyUDO9YzMyYzMiojIklkIs4XZzxWYmpjIyNHZisnOiwmbBJye0ICRiwiI34TQQFUM6NlUvFjQ6J5dRJzbk3Ca4U6N8c5MxNmQ5JFRW3EWJxEayhFZ4FncPJndZRUahRzcFdnZGZUOpRGeSRVWiplUy8EWh9kV8gjTip5bNpkSSFGWvcVMYVTURlHcHVXMwJjU' as any
@@ -31,6 +29,19 @@ interface IrionConfig {
   col: number
   sheet: string
   dataSource: string
+  computedColumns: ComputedColumn[]
+}
+
+interface ComputedColumn {
+  name: string
+  formula: string
+  index: number
+}
+
+enum Actions {
+  Add = 0,
+  Update = 1,
+  Delete = 2,
 }
 
 interface Config {
@@ -192,7 +203,7 @@ class App extends React.Component<{}, AppState> {
     this.wb1 = workBook
     const sheet = workBook.getActiveSheet()
 
-    this.insertButtons(sheet)
+    // this.insertButtons(sheet)
     // Bind events
     this.bindEvents(this.wb1, sheet)
 
@@ -237,7 +248,7 @@ class App extends React.Component<{}, AppState> {
     const sheet = this.designerWb1?.getActiveSheet()
     sheet?.setValue(1, 1, 'Type something here!')
 
-    this.insertButtons(sheet)
+    // this.insertButtons(sheet)
     this.bindEvents(this.designerWb1, sheet)
 
     // this.fetchData(POSTS_SOURCE).then((json) => {
@@ -401,7 +412,7 @@ class App extends React.Component<{}, AppState> {
         // Please refer to the following update sample and let us know if you face any issues. sample: https://codesandbox.io/s/blue-fast-qb68d?file=/src/index.js
 
         // this.fitColumns(sheet, col, columnNumber)
-        this.resizeColumns(sheet, col, columnNumber)
+        // this.resizeColumns(sheet, col, columnNumber)
       } catch (error) {
         console.error(error)
 
@@ -424,18 +435,45 @@ class App extends React.Component<{}, AppState> {
     const index = this.irionConfig.findIndex(
       (item) => item.sheet === sheet && item.tableName === tableName // && item.row === row && item.col === col
     )
-    const tableConfig = {
+
+    const tableConfig: IrionConfig = {
       tableName,
       row,
       col,
       sheet,
       dataSource,
+      computedColumns: [],
     }
 
     if (index !== -1) {
       this.irionConfig[index] = tableConfig
     } else {
       this.irionConfig.push(tableConfig)
+    }
+  }
+
+  updateComputedColumns = (tableName: string, sheet: string, action: Actions, computedColumn: ComputedColumn) => {
+    const configIndex = this.irionConfig.findIndex(
+      (item) => item.sheet === sheet && item.tableName === tableName // && item.row === row && item.col === col
+    )
+
+    if (configIndex === -1) {
+      return
+    }
+
+    const { computedColumns } = this.irionConfig[configIndex]
+    const computedColIndex = computedColumns.findIndex((computedCol) => computedCol.name === computedColumn.name)
+
+    switch (action) {
+      case Actions.Add:
+        this.irionConfig[configIndex].computedColumns = [...computedColumns, computedColumn]
+        break
+      case Actions.Update:
+        computedColumns[computedColIndex] = computedColumn
+        break
+      case Actions.Delete:
+        computedColumns.splice(computedColIndex, 1)
+        break
     }
   }
 
@@ -562,10 +600,54 @@ class App extends React.Component<{}, AppState> {
     // this.resizeColumns(sheet, col, 2)
   }
 
+  addComputedColumn = (activeSheet: GC.Spread.Sheets.Worksheet) => {
+    // open modal to set column's name & formula to replicate for each row of the table
+
+    if (activeSheet) {
+      const row = activeSheet.getActiveRowIndex()
+      const col = activeSheet.getActiveColumnIndex()
+
+      const table = activeSheet.tables.find(row, col)
+      if (table == null) {
+        console.warn('No table here')
+        return
+      }
+
+      this.wb1?.suspendPaint()
+
+      const tableRange = table.range()
+      const { col: startingCol } = tableRange
+
+      const columnIndex = col - startingCol
+      const computedColumnIndex = columnIndex + 1
+
+      const firstColumnName = table.getColumnName(0)
+      const secondColumnName = table.getColumnName(1)
+
+      const columnName = 'Formula'
+      const formula = `=[${firstColumnName}]+[${secondColumnName}]`
+
+      table.insertColumns(columnIndex, 1, true)
+      table.setColumnName(computedColumnIndex, columnName)
+      table.setColumnDataFormula(computedColumnIndex, formula)
+
+      // Update IrionConfig
+      const computedColumn: ComputedColumn = {
+        index: computedColumnIndex,
+        name: columnName,
+        formula: formula,
+      }
+
+      this.updateComputedColumns(table.name(), activeSheet.name(), Actions.Add, computedColumn)
+
+      this.wb1?.resumePaint()
+    }
+  }
+
   getRibbonConfig = () => {
     // config1.getCommand().cellType.subCommands.push("commandWindosButtonConfiguration")
     const config = (GC.Spread.Sheets as any).Designer.DefaultConfig
-    const a = (GC.Spread.Sheets as any).Designer
+
     config.commandMap = {
       saveData: {
         title: 'Save data to server',
@@ -607,7 +689,7 @@ class App extends React.Component<{}, AppState> {
         commandName: 'ribbonButtonButtonCellType',
         useButtonStyle: true,
         execute: async (context: any, propertyName: any, fontItalicChecked: any) => {
-          var activeSheet = context.Spread.getActiveSheet()
+          const activeSheet = context.Spread.getActiveSheet()
           // var basicButttonStyle = new GC.Spread.Sheets.Style()
           // basicButttonStyle.cellButtons = [
           //   //configuro come deve essere il bottone
@@ -688,7 +770,6 @@ class App extends React.Component<{}, AppState> {
         bigButton: 'true',
         commandName: 'showBindings',
         execute: async (context: any, propertyName: any, fontItalicChecked: any) => {
-          const activeSheet: GC.Spread.Sheets.Worksheet = context.Spread.getActiveSheet()
           //finestra con elenco tabelle inserite bindate
           this.showModal()
         },
@@ -699,7 +780,9 @@ class App extends React.Component<{}, AppState> {
         iconClass: 'ribbon-button-table',
         bigButton: 'true',
         commandName: 'addCompColumn',
-        execute: async (context: any, propertyName: any, fontItalicChecked: any) => {},
+        execute: async (context: any, propertyName: any, fontItalicChecked: any) => {
+          this.addComputedColumn(context.Spread.getActiveSheet())
+        },
       },
       editCompColumn: {
         title: 'Edit',
@@ -806,7 +889,7 @@ class App extends React.Component<{}, AppState> {
               children: [
                 {
                   direction: 'horizontal',
-                  commands: ['addCompColumn', 'editCompColumn', 'delCompColumn'],
+                  commands: ['addCompColumn'], // , 'editCompColumn', 'delCompColumn'],
                 },
               ],
             },
@@ -817,21 +900,6 @@ class App extends React.Component<{}, AppState> {
 
     return config
   }
-
-  // prova(){
-
-  //     //creo con la formattazione richiesta, un command per il click sul nome tabella
-  //     const config = (GC.Spread.Sheets as any).Designer
-  //     const value = {
-  //    "commandWindosButtonConfiguration":{
-  //       commandName: "commandWindosButtonConfiguration",
-  //       iconClass: "ribbon-button-buttonlistcelltype",
-  //       text: "Button List"
-  //     }
-  //   }
-  //     config.commandMap = { ...config.commandMap, ...value }
-
-  // }
 
   getRibbonExportDropdown() {
     EXPORT_MODE.forEach((exportName) => {
