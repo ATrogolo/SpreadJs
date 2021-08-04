@@ -405,11 +405,25 @@ class App extends React.Component<{}, AppState> {
         table.autoGenerateColumns(true) // nonsense but it works when removing columns
 
         table.bind(columns, '', data)
-        // table.bind(columns, '', data)
+        table.bind(columns, '', data)
         // do it again for bug
         // #6. Thanks for the sample this looks like bug to me hence we have escalated this issue to the concerned team for further investigation.
         // Till then as a workaround you may call the bind method twice that should solve the issue.
         // Please refer to the following update sample and let us know if you face any issues. sample: https://codesandbox.io/s/blue-fast-qb68d?file=/src/index.js
+
+        const tableConfig = this.irionConfig.find((config) => {
+          return config.tableName === tableName
+        })
+
+        if (tableConfig && tableConfig.computedColumns.length > 0) {
+          tableConfig.computedColumns.forEach((computedCol) => {
+            const { index, name: columnName, formula } = computedCol
+
+            table.insertColumns(index - 1, 1, true)
+            table.setColumnName(index, columnName)
+            table.setColumnDataFormula(index, formula)
+          })
+        }
 
         // this.fitColumns(sheet, col, columnNumber)
         // this.resizeColumns(sheet, col, columnNumber)
@@ -743,8 +757,6 @@ class App extends React.Component<{}, AppState> {
 
             fbx.workbook(context.Spread)
             this.fbx = fbx
-          
-
           } else {
             window.alert('Devi selezionare un bottone')
           }
