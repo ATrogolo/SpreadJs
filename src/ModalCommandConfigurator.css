@@ -1,215 +1,201 @@
 .modal {
-    
-    position: fixed; 
-    z-index: 1;
-    width: 310px;
-    height: 325px;
-    /*overflow: auto;  */
-    /* background-color: rgb(0,0,0); 
+  position: fixed;
+  z-index: 1;
+  width: 310px;
+  height: 325px;
+  /*overflow: auto;  */
+  /* background-color: rgb(0,0,0); 
     background-color: rgba(0,0,0,0.4);  */
 }
 
-
 .modal-content {
-    background-color: #fefefe8c;
-    /* margin: 15% auto; */
-    padding: 5px;
-    border: 5px solid green;
-    width: 93%; /* Could be more or less, depending on screen size */
-    height: 93%;
-    border-radius: 15px ; 
-    -webkit-animation-name: animatetop;
-    -webkit-animation-duration: 0.4s;
-    animation-name: animatetop;
-    animation-duration: 0.4s
+  background-color: #fefefed6;
+  /* margin: 15% auto; */
+  padding: 5px;
+  border: 5px solid green;
+  width: 100%; /* Could be more or less, depending on screen size */
+  height: 93%;
+  border-radius: 15px;
+  -webkit-animation-name: animatetop;
+  -webkit-animation-duration: 0.4s;
+  animation-name: animatetop;
+  animation-duration: 0.4s;
 }
 
-
-.buttonConfirm{
-    border-radius:15px;
-    border: 2px solid green;
+.buttonConfirm {
+  border-radius: 15px;
+  border: 2px solid green;
 }
 
-.buttonConfirm:hover{
-    background-color: lightgray;
+.buttonConfirm:hover {
+  background-color: lightgray;
 }
 
-.buttonConfirm:active{
-    color: green;
+.buttonConfirm:active {
+  color: green;
 }
 
-.buttonUndo{
-    border-radius:15px;
-    border: 2px solid #ff0000b3;
+.buttonUndo {
+  border-radius: 15px;
+  border: 2px solid #ff0000b3;
 }
 
-.buttonUndo:hover{
-    background-color: lightgray;
+.buttonUndo:hover {
+  background-color: lightgray;
 }
 
-.buttonUndo:active{
-    color:red;
+.buttonUndo:active {
+  color: red;
 }
 
 .modal-header {
-    width: 100%;
-    height: 14%;
-
+  width: 100%;
+  height: 14%;
 }
 
 /* Modal Body */
 .modal-body {
-    width: 100%;
-    height: 65%;
+  width: 100%;
+  height: 65%;
 }
 
 /* Modal Footer */
 .modal-footer {
-    text-align: center;
-    padding-top: 4px;
-    width: 100%;
-    height: 20%;
-    color: white;
+  text-align: center;
+  padding-top: 4px;
+  width: 100%;
+  height: 20%;
+  color: white;
 }
 
-.footerButton{
-    justify-content: space-evenly;
-    display: flex;
+.footerButton {
+  justify-content: space-evenly;
+  display: flex;
 }
 
+.labelSelect {
+  justify-content: space-around;
+  display: flex;
 
-.labelSelect{
-    justify-content: space-around;
-    display: flex;
-
-    align-items: center
+  align-items: center;
 }
 
-.selectSize{
-    width: 70%;
-
+.selectSize {
+  width: 70%;
 }
-
 
 .addButton {
-    padding-top : 5px;
-    height: 25px;
-    width: 25px;
-    text-decoration: none;
-    display: inline-block;
-    outline: none;
-    cursor: pointer;
-    border-style: none;
-    color: white;
-    background-color: #3498db;
-    border-radius: 50%;
-    overflow: none;
-    text-align: center;
-    padding: 0;
-    font-size: 23px;
-  }
-
-
-.addButton:hover{
-    background-color: #205476;
+  padding-top: 5px;
+  height: 25px;
+  width: 25px;
+  text-decoration: none;
+  display: inline-block;
+  outline: none;
+  cursor: pointer;
+  border-style: none;
+  color: white;
+  background-color: #3498db;
+  border-radius: 50%;
+  overflow: none;
+  text-align: center;
+  padding: 0;
+  font-size: 23px;
 }
 
-
-.addButton:active{
-    background-color: green;
+.addButton:hover {
+  background-color: #205476;
 }
 
-
-
-.removeButton{
-    padding-top : 5px;
-    height: 15px;
-    width: 15px;
-    text-decoration: none;
-    display: inline-block;
-    outline: none;
-    cursor: pointer;
-    border-style: none;
-    color: red;
-    background-color: white;
-    border-radius: 50%;
-    overflow: none;
-    text-align: center;
-    padding: 0;
-    font-size: 14px;
-  }
-
-
-.removeButton:hover{
-    background-color: lightgray;
+.addButton:active {
+  background-color: green;
 }
 
-
-.removeButton:active{
-    color: green;
+.removeButton {
+  padding-top: 5px;
+  height: 15px;
+  width: 15px;
+  text-decoration: none;
+  display: inline-block;
+  outline: none;
+  cursor: pointer;
+  border-style: none;
+  color: red;
+  background-color: white;
+  border-radius: 50%;
+  overflow: none;
+  text-align: center;
+  padding: 0;
+  font-size: 14px;
 }
 
+.removeButton:hover {
+  background-color: lightgray;
+}
+
+.removeButton:active {
+  color: green;
+}
 
 .componentWraper {
-    margin: 8px 5px 0px 5px;
-    position: relative;
-    border: 2px solid green;
-    border-radius: 12px;
-    height: 98%;
-    padding-left: 9px;
-
-  }
-  
-  .componentWraper .componentTitle {
-    position: absolute;
-    top: -30px;
-    background: #fff;
-    padding: 0 5px;
-  } 
-
-
-  .overflow{
-    height: 100%;
-    width: 100%;
-    overflow: auto;
-  }
-
-  .MuiDialog-paperWidthSm {
-
-    width: 310px;
-    height: 325px;
+  margin: 8px 0px 0px 0px;
+  position: relative;
+  border: 2px solid green;
+  border-radius: 12px;
+  height: 98%;
 }
 
-
-.MuiPaper-root{
-    background-color: #fff0 !important;
+.componentWraper .componentTitle {
+  position: absolute;
+  top: -30px;
+  background: #fff;
+  padding: 0 5px;
 }
 
-.MuiDialog-paper{
-    margin: 0px !important;
+.overflow {
+  height: 86%;
+  width: 100%;
+  overflow: auto;
 }
 
-.MuiDialogTitle-root{
-    padding: 0px !important;
-    height: 5px;
-
-    z-index: 3;
+.MuiDialog-paperWidthSm {
+  width: 330px;
+  height: 325px;
 }
 
-.MuiPaper-elevation24{
-    box-shadow:none !important;
+.MuiPaper-root {
+  background-color: #fff0 !important;
+}
+
+.MuiDialog-paper {
+  margin: 0px !important;
+}
+
+.MuiDialogTitle-root {
+  padding: 0px !important;
+  height: 5px;
+
+  z-index: 3;
+}
+
+.MuiPaper-elevation24 {
+  box-shadow: none !important;
 }
 
 .MuiBackdrop-root {
-    background-color: #fff0 !important;
-    top: unset !important;
-    bottom: unset !important;
-    left: unset !important;
-    right: unset !important;
+  background-color: #fff0 !important;
+  top: unset !important;
+  bottom: unset !important;
+  left: unset !important;
+  right: unset !important;
 }
 
-.MuiDialog-root{
-    inset: unset !important;
-    top: 15% !important;
-    left: 45% !important;
+.MuiDialog-root {
+  inset: unset !important;
+  top: 15% !important;
+  left: 45% !important;
+}
+
+.getButton {
+  border-radius: 50px;
+  font-size: 10px;
 }

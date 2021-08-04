@@ -21,15 +21,22 @@ export class ModalCommandConfigurator extends React.Component<any, any> {
     super(props)
     this.state = {
       options: [
-        { value: 'chocolate', label: 'Chocolate' },
-        { value: 'strawberry', label: 'Strawberry' },
-        { value: 'vanilla', label: 'Vanilla' },
+        { value: 'calcola', label: 'Calcola' },
+        { value: 'salva', label: 'Risolvi' },
+        { value: 'esegui', label: 'Esegui' },
+      ],
+      options2: [
+        { value: 'calcola', label: 'Id' },
+        { value: 'salva', label: 'Valore' },
+        { value: 'esegui', label: 'Nome' },
       ],
       parameters: [],
       commandSelected: {},
       spreadSheet: GC.Spread,
       fbx: GC.Spread.Sheets.FormulaTextBox.FormulaTextBox,
+      variabile : ''
     }
+    
   }
 
   createInformation() {
@@ -60,11 +67,20 @@ export class ModalCommandConfigurator extends React.Component<any, any> {
     this.setState({ commandSelected: com })
   }
 
+ 
+  roba(e:any, index:any){
+    this.props.getSelectedRangeFormula(e)
+    const a = document.getElementById('formulaBar')!
+    // a.textContent = this.props.fbx.text()
+    this.setState({variabile :  a.textContent} )
+  }
+
   setParameter = (value: any, index: number) => {}
+
 
   render() {
     const { showModalConfigurator, onClose, designerMode } = this.props
-    const { options, parameters, commandSelected } = this.state
+    const { options, parameters, commandSelected,options2,variabile } = this.state
 
     return showModalConfigurator && designerMode ? (
       <span>
@@ -83,31 +99,34 @@ export class ModalCommandConfigurator extends React.Component<any, any> {
                 <div className="labelSelect">
                   <div>Command:</div>
                   <div className="selectSize">
-                    <Select options={options} onChange={this.handleChange} />
+                    <Select   options={options} onChange={this.handleChange} />
                   </div>
                 </div>
               </div>
 
               <div className="modal-body">
-                {Object.keys(commandSelected).length !== 0 && (
-                  <div className="componentWraper">
-                    <p className="componentTitle">Parameter</p>
+                <div className="componentWraper">
+                  <p className="componentTitle">Parameter</p>
+                  <div style={{}}>
+                    <div
+                      id="formulaBar"
+                      spellCheck="false"
+                      style={{ border: '1px solid #808080', width: '100%', height: '86%' }}
+                    ></div>
+                  </div>
+                  {Object.keys(commandSelected).length !== 0 && (
                     <div className="overflow">
                       {parameters.map((element: any, index: number) => {
                         return (
                           <div className="labelSelect" key={index}>
                             <div style={{ width: '45%' }}>
-                              <Select options={options} onChange={this.handleChange} />
+                              <Select options={options2} onChange={this.handleChange} />
                             </div>
-                            {/* <input  defaultValue={element.value} onChange={() => this.setParameter(element.value, index)}/> */}
-                            <div style={{ width: '45%' }}>
-                              <div
-                                id="formulaBar"
-                                spellCheck="false"
-                                style={{ border: '1px solid #808080', width: '100%' }}
-                              ></div>
-                              {/* <input type="button" id="getValue" value="Get Value" style={{ fontSize: "14px", height: "30px" }} onClick={(e)=>{this.props.getSelectedRangeFormula(e)}} /> */}
+                            <div style={{    paddingLeft: '5px' , paddingRight: '5px'}}>
+                            <input value={variabile} style={{    width: '150px'}} ></input>
                             </div>
+                            <button id="getValue" className="getButton" onClick={(e)=>{this.roba(e,index)}} >Get Range</button>
+                          
                             <div>
                               <button className="removeButton" onClick={() => this.removeParameter(index)}>
                                 X
@@ -117,8 +136,8 @@ export class ModalCommandConfigurator extends React.Component<any, any> {
                         )
                       })}
                     </div>
-                  </div>
-                )}
+                  )}
+                </div>
               </div>
               {/* <div className="options-container">
                 <div className="top-options">
@@ -153,7 +172,7 @@ export class ModalCommandConfigurator extends React.Component<any, any> {
                 </div>
               </div>
 
-              <div style={{ display: 'none' }} id="formulaBar" spellCheck="false"></div>
+              {/* <div style={{ display: 'none' }} id="formulaBar" spellCheck="false"></div> */}
             </div>
           </div>
         </Dialog>

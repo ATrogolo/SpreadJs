@@ -108,7 +108,7 @@ class App extends React.Component<{}, AppState> {
   }
 
   getSelectedRangeFormula(e: any) {
-    const a = document.getElementById('rangeText')!
+    const a = document.getElementById('formulaBar')!
     a.textContent = this.fbx.text()
   }
 
@@ -736,6 +736,15 @@ class App extends React.Component<{}, AppState> {
             // se c'è un id allora apri la modale ? se esiste una configurazione esistente mostrala in modale : mostra modale da configurare
             //se non esiste un id allora fai finta di nulla e lascia fare al default
             this.showModalConfigurator()
+            var fbx = new GC.Spread.Sheets.FormulaTextBox.FormulaTextBox(document.getElementById('formulaBar')!, {
+              rangeSelectMode: true,
+              absoluteReference: false,
+            })
+
+            fbx.workbook(context.Spread)
+            this.fbx = fbx
+          
+
           } else {
             window.alert('Devi selezionare un bottone')
           }
