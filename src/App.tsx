@@ -14,7 +14,7 @@ import Dialog from '@material-ui/core/Dialog'
 import { DraggableComponent } from './DraggableComponent'
 
 import AddComputedColumnModal, { AddComputedColumn } from './AddComputedColumnModal'
-import { getBoundedTable } from './utils'
+import { addMoreRoom, getBoundedTable } from './utils'
 
 // GC.Spread.Sheets.LicenseKey =
 //   'GrapeCity-Internal-Use-Only,362369852286222#B0vRARPV5NrR6LUhmN8YGe4k5LhlkbhJWaZVkSmBjellXUF5URz46a4N6RhhDNadjW7c6d4VES7MURnlHVXd5V7gnVwA7YxIkeYNXMwxGdqVzUlhVMzIUWxdXTwgTUJZlNvImdBJ4SW5GTExEezhVOOxWb7R7VKF7TaFnWYJ4L6c7NoN4RRNGSXVEaKJDTFVTYCNmMKNlUZNFMjNzSxgHRwhTMwQ4QsRVWlFTMjFmdUZjYyUXZRR6bXV6RBt6NDBHV8Z5drdWZtRUbCJHeZRFO8F6R5AzM4ljSXNjQ9gTMqBHah5UTKZWT6h6YihXU8Q6V7ckI0IyUiwiIyUUNzAjQwcjI0ICSiwCN9EzM9kjM4YTM0IicfJye#4Xfd5nIFVUSWJiOiMkIsICNx8idgAyUKBCZhVmcwNlI0IiTis7W0ICZyBlIsISM4ETNyADIxAjMxAjMwIjI0ICdyNkIsIybp9ie4lGbit6YhR7cuoCLt36YukHdpNWZwFmcn9iKiojIz5GRiwiI9RXaDVGchJ7RiojIh94QiwiIyIjM6gjMyUDO9YzMyYzMiojIklkIs4XZzxWYmpjIyNHZisnOiwmbBJye0ICRiwiI34TQQFUM6NlUvFjQ6J5dRJzbk3Ca4U6N8c5MxNmQ5JFRW3EWJxEayhFZ4FncPJndZRUahRzcFdnZGZUOpRGeSRVWiplUy8EWh9kV8gjTip5bNpkSSFGWvcVMYVTURlHcHVXMwJjU' as any
@@ -78,7 +78,6 @@ class App extends React.Component<{}, AppState> {
   hostStyle: any
   wb1: GC.Spread.Sheets.Workbook | undefined
   wb2: GC.Spread.Sheets.Workbook | undefined
-  designerWb1: GC.Spread.Sheets.Workbook | undefined
   ribbonConfig: any
   irionConfig: IrionConfig[] = []
   fbx: any
@@ -128,7 +127,6 @@ class App extends React.Component<{}, AppState> {
 
   render() {
     const { isAddComputedColumnOpen, editComputedColumn } = this.state
-    // const designerModeCssClass = 'designer-mode ' + (designerMode ? 'on' : 'off')
 
     return (
       <>
@@ -355,13 +353,6 @@ class App extends React.Component<{}, AppState> {
           {/* </> */}
           {/* )} */}
         </div>
-        {/* {(designerMode && (
-          <Designer
-            styleInfo={{ width: '100%', height: '100vh' }}
-            designerInitialized={(designer: any) => this.initDesigner(designer.getWorkbook())}
-            config={this.ribbonConfig}
-          ></Designer>
-        )) || ( */}
         <>
           <Designer
             styleInfo={{ width: '100%', height: '65vh' }}
@@ -369,11 +360,6 @@ class App extends React.Component<{}, AppState> {
             config={this.ribbonConfig}
           ></Designer>
 
-          {/* <SpreadSheets
-              hostStyle={this.hostStyle}
-              name="WB1"
-              workbookInitialized={(workBook) => this.initSpread1(workBook)}
-            ></SpreadSheets> */}
           <div id="statusBar"></div>
 
           <hr />
@@ -436,20 +422,6 @@ class App extends React.Component<{}, AppState> {
 
   initSpread2(workBook: GC.Spread.Sheets.Workbook) {
     this.wb2 = workBook
-  }
-
-  initDesigner(workBook: GC.Spread.Sheets.Workbook) {
-    this.designerWb1 = workBook
-
-    const sheet = this.designerWb1?.getActiveSheet()
-    sheet?.setValue(1, 1, 'Type something here!')
-
-    // this.insertButtons(sheet)
-    this.bindEvents(this.designerWb1, sheet)
-
-    // this.fetchData(POSTS_SOURCE).then((json) => {
-    //   this.setTable(json, POSTS_SOURCE, 5, 2, 'ds_wb_table1', sheet, false, true)
-    // })
   }
 
   exportJson(workbook?: GC.Spread.Sheets.Workbook) {
@@ -529,28 +501,6 @@ class App extends React.Component<{}, AppState> {
     }, DELAY)
   }
 
-  addMoreRoom = (
-    sheet: GC.Spread.Sheets.Worksheet,
-    row: number,
-    rowNumber: number,
-    col: number,
-    columnNumber: number
-  ) => {
-    // Check available space
-    const sheetRowCount = sheet.getRowCount()
-    const sheetColCount = sheet.getColumnCount()
-    // Rows
-    if (sheetRowCount - row < rowNumber) {
-      const rowsToAdd = rowNumber - sheetRowCount + row + 10
-      sheet.addRows(sheetRowCount - 1, rowsToAdd)
-    }
-    // Columns
-    if (sheetColCount - col < columnNumber) {
-      const colsToAdd = columnNumber - sheetColCount + col + 10
-      sheet.addColumns(sheetColCount - 1, colsToAdd)
-    }
-  }
-
   setTable = (
     json: any[],
     dataSource: string,
@@ -565,7 +515,6 @@ class App extends React.Component<{}, AppState> {
     if (sheet) {
       this.wb1?.suspendPaint()
       this.wb2?.suspendPaint()
-      this.designerWb1?.suspendPaint()
       try {
         let data = dataSource === POSTS_SOURCE || dataSource === COMMENTS_SOURCE ? json.slice(0, 2) : json
 
@@ -578,7 +527,7 @@ class App extends React.Component<{}, AppState> {
         const columnNumber = columnNames.length
 
         // Add more rows / columns if there's no enough room
-        this.addMoreRoom(sheet, row, rowNumber, col, columnNumber)
+        addMoreRoom(sheet, row, rowNumber, col, columnNumber)
 
         let table = sheet.tables.findByName(tableName)
         if (table == null) {
@@ -628,11 +577,9 @@ class App extends React.Component<{}, AppState> {
 
         // this.wb1?.resumePaint()
         // this.wb2?.resumePaint()
-        // this.designerWb1?.resumePaint()
       } finally {
         this.wb1?.resumePaint()
         this.wb2?.resumePaint()
-        this.designerWb1?.resumePaint()
       }
     }
   }
@@ -880,7 +827,7 @@ class App extends React.Component<{}, AppState> {
         bigButton: 'true',
         commandName: 'saveData',
         execute: async (context: any, propertyName: any, fontItalicChecked: any) => {
-          const config = this.exportConfig(this.designerWb1)
+          const config = this.exportConfig(this.wb1)
 
           console.log('Save Action', config)
         },
@@ -914,45 +861,10 @@ class App extends React.Component<{}, AppState> {
         useButtonStyle: true,
         execute: async (context: any, propertyName: any, fontItalicChecked: any) => {
           const activeSheet = context.Spread.getActiveSheet()
-          // var basicButttonStyle = new GC.Spread.Sheets.Style()
-          // basicButttonStyle.cellButtons = [
-          //   //configuro come deve essere il bottone
-          //   {
-          //     caption: 'enable',
-          //     useButtonStyle: true,
-          //     // enabled: true,
-          //     width: undefined!,
-          //     hoverBackColor: 'deepskyblue',
-          //     buttonBackColor: 'green',
-          //     //configuro cosa deve accadere al click in griglia
-          //     command: (sheet, row, col, option) => {
-          //       this.setState({ buttonCaption: 'ciao' })
-          //       console.log(sheet, row, col, option)
-
-          //       // Get Command from IrionConfig and fire it
-          //       this.showModalConfigurator()
-
-          //       // if (this.state.showModalConfigurator) {
-          //       //   var fbx = new GC.Spread.Sheets.FormulaTextBox.FormulaTextBox(document.getElementById('formulaBar')!, {
-          //       //     rangeSelectMode: true,
-          //       //     absoluteReference: false,
-          //       //   })
-
-          //       //   fbx.workbook(context.Spread)
-          //       //   this.fbx = fbx
-          //       // }
-          //     },
-          //   },
-          // ]
-          // //pesco la cella selezionata
-          // const row = activeSheet.getActiveRowIndex()
-          // const col = activeSheet.getActiveColumnIndex()
-
-          // activeSheet.setText(row, col)
-          // activeSheet.setStyle(row, col, basicButttonStyle)
           const row = activeSheet.getActiveRowIndex()
           const col = activeSheet.getActiveColumnIndex()
           const cellType = activeSheet.getCellType(row, col)
+
           if (cellType instanceof GC.Spread.Sheets.CellTypes.Button) {
             const cellType = activeSheet.getCellType(row, col) as any
             cellType.id = 'ciao'
@@ -1057,14 +969,6 @@ class App extends React.Component<{}, AppState> {
           }
         },
       },
-      delCompColumn: {
-        title: 'Remove',
-        text: 'Remove',
-        iconClass: 'ribbon-button-clear-celltype',
-        bigButton: 'true',
-        commandName: 'delCompColumn',
-        execute: async (context: any, propertyName: any, fontItalicChecked: any) => {},
-      },
       resetIrionConfig: {
         title: 'Reset',
         text: 'Reset',
@@ -1164,7 +1068,7 @@ class App extends React.Component<{}, AppState> {
               children: [
                 {
                   direction: 'horizontal',
-                  commands: ['addCompColumn', 'editCompColumn'], // ,  'delCompColumn'],
+                  commands: ['addCompColumn', 'editCompColumn'],
                 },
               ],
             },
@@ -1176,7 +1080,7 @@ class App extends React.Component<{}, AppState> {
               children: [
                 {
                   direction: 'horizontal',
-                  commands: ['resetIrionConfig'], // , 'editCompColumn', 'delCompColumn'],
+                  commands: ['resetIrionConfig'],
                 },
               ],
             },

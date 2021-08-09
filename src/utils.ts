@@ -23,3 +23,25 @@ export const getBoundedTable = (activeSheet: GC.Spread.Sheets.Worksheet, irionCo
     console.warn('The cell does not belong to a table')
   }
 }
+
+export const addMoreRoom = (
+  sheet: GC.Spread.Sheets.Worksheet,
+  row: number,
+  rowNumber: number,
+  col: number,
+  columnNumber: number
+) => {
+  // Check available space
+  const sheetRowCount = sheet.getRowCount()
+  const sheetColCount = sheet.getColumnCount()
+  // Rows
+  if (sheetRowCount - row < rowNumber) {
+    const rowsToAdd = rowNumber - sheetRowCount + row + 10
+    sheet.addRows(sheetRowCount - 1, rowsToAdd)
+  }
+  // Columns
+  if (sheetColCount - col < columnNumber) {
+    const colsToAdd = columnNumber - sheetColCount + col + 10
+    sheet.addColumns(sheetColCount - 1, colsToAdd)
+  }
+}
