@@ -1,10 +1,9 @@
 import * as GC from '@grapecity/spread-sheets'
 import Dialog from '@material-ui/core/Dialog'
 import DialogTitle from '@material-ui/core/DialogTitle'
-import Paper, { PaperProps } from '@material-ui/core/Paper'
 import React from 'react'
-import Draggable from 'react-draggable'
 import Select from 'react-select'
+import { DraggableComponent } from './DraggableComponent'
 import './ModalCommandConfigurator.css'
 
 export interface ModalProps {
@@ -34,9 +33,8 @@ export class ModalCommandConfigurator extends React.Component<any, any> {
       commandSelected: {},
       spreadSheet: GC.Spread,
       fbx: GC.Spread.Sheets.FormulaTextBox.FormulaTextBox,
-      variabile : ''
+      variabile: '',
     }
-    
   }
 
   createInformation() {
@@ -67,27 +65,25 @@ export class ModalCommandConfigurator extends React.Component<any, any> {
     this.setState({ commandSelected: com })
   }
 
- 
-  roba(e:any, index:any){
+  roba(e: any, index: any) {
     this.props.getSelectedRangeFormula(e)
     const a = document.getElementById('formulaBar')!
     // a.textContent = this.props.fbx.text()
-    this.setState({variabile :  a.textContent} )
+    this.setState({ variabile: a.textContent })
   }
 
   setParameter = (value: any, index: number) => {}
 
-
   render() {
     const { showModalConfigurator, onClose, designerMode } = this.props
-    const { options, parameters, commandSelected,options2,variabile } = this.state
+    const { options, parameters, commandSelected, options2, variabile } = this.state
 
     return showModalConfigurator && designerMode ? (
       <span>
         <Dialog
           style={{ inset: 'unset !important', top: '15% !important', left: '45% !important' }}
           open={true}
-          PaperComponent={PaperComponent}
+          PaperComponent={DraggableComponent}
           aria-labelledby="draggable-dialog-title"
           disableBackdropClick={false}
         >
@@ -99,7 +95,7 @@ export class ModalCommandConfigurator extends React.Component<any, any> {
                 <div className="labelSelect">
                   <div>Command:</div>
                   <div className="selectSize">
-                    <Select   options={options} onChange={this.handleChange} />
+                    <Select options={options} onChange={this.handleChange} />
                   </div>
                 </div>
               </div>
@@ -122,11 +118,19 @@ export class ModalCommandConfigurator extends React.Component<any, any> {
                             <div style={{ width: '45%' }}>
                               <Select options={options2} onChange={this.handleChange} />
                             </div>
-                            <div style={{    paddingLeft: '5px' , paddingRight: '5px'}}>
-                            <input value={variabile} style={{    width: '150px'}} ></input>
+                            <div style={{ paddingLeft: '5px', paddingRight: '5px' }}>
+                              <input value={variabile} style={{ width: '150px' }}></input>
                             </div>
-                            <button id="getValue" className="getButton" onClick={(e)=>{this.roba(e,index)}} >Get Range</button>
-                          
+                            <button
+                              id="getValue"
+                              className="getButton"
+                              onClick={(e) => {
+                                this.roba(e, index)
+                              }}
+                            >
+                              Get Range
+                            </button>
+
                             <div>
                               <button className="removeButton" onClick={() => this.removeParameter(index)}>
                                 X
@@ -179,12 +183,4 @@ export class ModalCommandConfigurator extends React.Component<any, any> {
       </span>
     ) : null
   }
-}
-
-function PaperComponent(props: PaperProps) {
-  return (
-    <Draggable handle="#draggable-dialog-title" cancel={'[class*="MuiDialogContent-root"]'}>
-      <Paper {...props} />
-    </Draggable>
-  )
 }

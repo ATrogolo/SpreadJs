@@ -67,14 +67,12 @@
   background-size: 35px 35px;
 }
 
-
 .modalBinding {
   background-color: #68adec;
   text-align: center;
   width: 200px;
   height: 200px;
 }
-
 
 .center {
   position: absolute;
@@ -83,4 +81,6 @@
   transform: translate(-50%, -50%);
 }
 
-
+.gc-sjsdesigner-dialog.custom {
+  display: block;
+}

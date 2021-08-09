@@ -181,12 +181,14 @@
   box-shadow: none !important;
 }
 
-.MuiBackdrop-root {
-  background-color: #fff0 !important;
-  top: unset !important;
+.MuiDialog-root > .MuiBackdrop-root {
+  background-color: #aaaaaa;
+  opacity: 0.3 !important;
+  /* background-color: #fff0 !important; */
+  /* top: unset !important;
   bottom: unset !important;
   left: unset !important;
-  right: unset !important;
+  right: unset !important; */
 }
 
 .MuiDialog-root {

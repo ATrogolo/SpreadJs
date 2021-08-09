@@ -10,6 +10,11 @@ import '@grapecity/spread-sheets/styles/gc.spread.sheets.excel2013white.css'
 import './App.css'
 import { Modal } from './Modal'
 import { ModalCommandConfigurator } from './ModalCommandConfigurator'
+import Dialog from '@material-ui/core/Dialog'
+import { DraggableComponent } from './DraggableComponent'
+
+import AddComputedColumnModal, { AddComputedColumn } from './AddComputedColumnModal'
+import { getBoundedTable } from './utils'
 
 // GC.Spread.Sheets.LicenseKey =
 //   'GrapeCity-Internal-Use-Only,362369852286222#B0vRARPV5NrR6LUhmN8YGe4k5LhlkbhJWaZVkSmBjellXUF5URz46a4N6RhhDNadjW7c6d4VES7MURnlHVXd5V7gnVwA7YxIkeYNXMwxGdqVzUlhVMzIUWxdXTwgTUJZlNvImdBJ4SW5GTExEezhVOOxWb7R7VKF7TaFnWYJ4L6c7NoN4RRNGSXVEaKJDTFVTYCNmMKNlUZNFMjNzSxgHRwhTMwQ4QsRVWlFTMjFmdUZjYyUXZRR6bXV6RBt6NDBHV8Z5drdWZtRUbCJHeZRFO8F6R5AzM4ljSXNjQ9gTMqBHah5UTKZWT6h6YihXU8Q6V7ckI0IyUiwiIyUUNzAjQwcjI0ICSiwCN9EzM9kjM4YTM0IicfJye#4Xfd5nIFVUSWJiOiMkIsICNx8idgAyUKBCZhVmcwNlI0IiTis7W0ICZyBlIsISM4ETNyADIxAjMxAjMwIjI0ICdyNkIsIybp9ie4lGbit6YhR7cuoCLt36YukHdpNWZwFmcn9iKiojIz5GRiwiI9RXaDVGchJ7RiojIh94QiwiIyIjM6gjMyUDO9YzMyYzMiojIklkIs4XZzxWYmpjIyNHZisnOiwmbBJye0ICRiwiI34TQQFUM6NlUvFjQ6J5dRJzbk3Ca4U6N8c5MxNmQ5JFRW3EWJxEayhFZ4FncPJndZRUahRzcFdnZGZUOpRGeSRVWiplUy8EWh9kV8gjTip5bNpkSSFGWvcVMYVTURlHcHVXMwJjU' as any
@@ -21,9 +26,12 @@ interface AppState {
   show: boolean
   showModalConfigurator: boolean
   buttonCaption: string
+  isAddComputedColumnOpen: boolean
+  editComputedColumn: { isOpen: boolean; tableName: string; computedColumn: ComputedColumn | null }
+  tableConfig: IrionConfig | null
 }
 
-interface IrionConfig {
+export interface IrionConfig {
   tableName: string
   row: number
   col: number
@@ -33,6 +41,7 @@ interface IrionConfig {
 }
 
 interface ComputedColumn {
+  id: number
   name: string
   formula: string
   index: number
@@ -59,9 +68,11 @@ const TODOS_SOURCE = 'Todos'
 const COMMENTS_SOURCE = 'Comments'
 const DELAY = 2000
 const DATASOURCES = [POSTS_SOURCE, USERS_SOURCE, TODOS_SOURCE, COMMENTS_SOURCE]
-const WITH_BINDING = 'With Binding'
-const WITHOUT_BINDING = 'Without Binding'
+const WITH_BINDING = 'With Bindings'
+const WITHOUT_BINDING = 'Without Bindings'
 const EXPORT_MODE = [WITH_BINDING, WITHOUT_BINDING]
+
+const INIT_EDIT_COMPUTEDCOL = { isOpen: false, tableName: '', computedColumn: null }
 
 class App extends React.Component<{}, AppState> {
   hostStyle: any
@@ -84,6 +95,9 @@ class App extends React.Component<{}, AppState> {
       show: false,
       showModalConfigurator: false,
       buttonCaption: '',
+      isAddComputedColumnOpen: false,
+      editComputedColumn: INIT_EDIT_COMPUTEDCOL,
+      tableConfig: null,
     }
 
     this.ribbonConfig = this.getRibbonConfig()
@@ -113,7 +127,7 @@ class App extends React.Component<{}, AppState> {
   }
 
   render() {
-    // const { designerMode } = this.state
+    const { isAddComputedColumnOpen, editComputedColumn } = this.state
     // const designerModeCssClass = 'designer-mode ' + (designerMode ? 'on' : 'off')
 
     return (
@@ -129,6 +143,190 @@ class App extends React.Component<{}, AppState> {
           fbx={this.fbx}
           buttonCaption={this.state.buttonCaption}
         ></ModalCommandConfigurator>
+
+        {/* Add New Computed Column Dialog */}
+        <AddComputedColumnModal
+          isOpen={isAddComputedColumnOpen}
+          workbook={this.wb1}
+          addComputedColumn={this.addComputedColumn}
+          toggleAddComputedModal={this.toggleAddComputedModal}
+        />
+
+        {/* Edit Computed Column Dialog */}
+        {editComputedColumn.isOpen && editComputedColumn.computedColumn && (
+          <Dialog
+            open={editComputedColumn.isOpen}
+            PaperComponent={DraggableComponent}
+            aria-labelledby="draggable-dialog-title"
+            disableBackdropClick={false}
+          >
+            <div id="draggable-dialog-title" className="gc-sjsdesigner-dialog gc-designer-root en custom">
+              <div className="dialog-titlebar">
+                <span className="dialog-titlebar-title">Edit column</span>
+              </div>
+
+              <div className="dialog-content">
+                <div>
+                  <div className="gc-flexcontainer">
+                    <div>
+                      <fieldset className="gc-label-container">
+                        <legend className="text">Computed column:</legend>
+                        <div className="gc-column-set" style={{ margin: '3px 0px' }}>
+                          <div className="gc-flex-component flex-default" style={{ width: '80px' }}>
+                            <div title="">Name:</div>
+                          </div>
+                          <div className="gc-flex-component flex-auto">
+                            <div>
+                              <input
+                                type="text"
+                                value={editComputedColumn.computedColumn.name}
+                                onChange={({ target: { value } }) => {
+                                  if (this.state.editComputedColumn.computedColumn) {
+                                    const computedColumn = {
+                                      ...this.state.editComputedColumn.computedColumn,
+                                      name: value,
+                                    }
+
+                                    this.setState({
+                                      editComputedColumn: {
+                                        ...this.state.editComputedColumn,
+                                        computedColumn,
+                                      },
+                                    })
+                                  }
+                                }}
+                              />
+                            </div>
+                          </div>
+                        </div>
+                        <div className="gc-column-set" style={{ margin: '3px 0px' }}>
+                          <div className="gc-flex-component flex-default" style={{ width: '80px' }}>
+                            <div title="">Formula:</div>
+                          </div>
+                          <div className="gc-flex-component flex-auto">
+                            <div>
+                              <input
+                                type="text"
+                                value={editComputedColumn.computedColumn.formula}
+                                onChange={({ target: { value } }) => {
+                                  if (this.state.editComputedColumn.computedColumn) {
+                                    const computedColumn = {
+                                      ...this.state.editComputedColumn.computedColumn,
+                                      formula: value,
+                                    }
+
+                                    this.setState({
+                                      editComputedColumn: {
+                                        ...this.state.editComputedColumn,
+                                        computedColumn,
+                                      },
+                                    })
+                                  }
+                                }}
+                              />
+                            </div>
+                          </div>
+                        </div>
+                      </fieldset>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div className="dialog-footer">
+                <button
+                  type="button"
+                  className="gc-ui-button"
+                  onClick={() => {
+                    const activeSheet = this.wb1?.getActiveSheet()
+                    if (!activeSheet) {
+                      return
+                    }
+
+                    const updatedComputedColumn = { ...this.state.editComputedColumn }
+                    if (!updatedComputedColumn || !updatedComputedColumn.computedColumn) {
+                      return
+                    }
+
+                    // Reset state
+                    this.setState({ editComputedColumn: INIT_EDIT_COMPUTEDCOL })
+
+                    const computedColumn = { ...updatedComputedColumn.computedColumn }
+
+                    this.updateComputedColumns(
+                      updatedComputedColumn.tableName,
+                      activeSheet.name(),
+                      Actions.Update,
+                      computedColumn
+                    )
+
+                    const tableConfig = this.irionConfig.find(
+                      (config) => config.tableName === updatedComputedColumn.tableName
+                    )
+
+                    if (tableConfig) {
+                      const { dataSource, row, col, tableName } = tableConfig
+
+                      this.fetchData(dataSource).then((json) => {
+                        this.setTable(json, dataSource, row, col, tableName, activeSheet)
+                      })
+                    }
+                  }}
+                >
+                  <span>OK</span>
+                </button>
+                <button
+                  type="button"
+                  className="gc-ui-button"
+                  onClick={() => this.setState({ editComputedColumn: INIT_EDIT_COMPUTEDCOL })}
+                >
+                  <span>Cancel</span>
+                </button>
+                <button
+                  type="button"
+                  className="gc-ui-button"
+                  onClick={() => {
+                    const activeSheet = this.wb1?.getActiveSheet()
+                    const { tableName, computedColumn } = this.state.editComputedColumn
+
+                    if (!activeSheet) {
+                      return
+                    }
+
+                    if (!tableName || !computedColumn) {
+                      return
+                    }
+
+                    const tableConfig = this.irionConfig.find((config) => config.tableName === tableName)
+
+                    if (tableConfig) {
+                      const { dataSource, row, col, tableName } = tableConfig
+
+                      const computedCol = tableConfig?.computedColumns.find(
+                        (computedCol) => computedCol.id === computedColumn.id
+                      )
+
+                      if (computedCol) {
+                        this.updateComputedColumns(tableName, activeSheet.name(), Actions.Delete, computedColumn)
+
+                        // if (computedColIndex > -1) {
+                        //   tableConfig.computedColumns.splice(computedColIndex, 1)
+                        // }
+
+                        this.fetchData(dataSource).then((json) => {
+                          this.setTable(json, dataSource, row, col, tableName, activeSheet)
+                        })
+                      }
+                    }
+
+                    this.setState({ editComputedColumn: INIT_EDIT_COMPUTEDCOL })
+                  }}
+                >
+                  <span>Remove</span>
+                </button>
+              </div>
+            </div>
+          </Dialog>
+        )}
         <div className="toolbar">
           {/* <button
             className={designerModeCssClass}
@@ -157,7 +355,6 @@ class App extends React.Component<{}, AppState> {
           {/* </> */}
           {/* )} */}
         </div>
-
         {/* {(designerMode && (
           <Designer
             styleInfo={{ width: '100%', height: '100vh' }}
@@ -191,7 +388,6 @@ class App extends React.Component<{}, AppState> {
           </button>
         </>
         {/* )} */}
-
         <Modal show={this.state.show} onClose={this.hideModal}>
           <p>Modal</p>
         </Modal>
@@ -476,17 +672,21 @@ class App extends React.Component<{}, AppState> {
     }
 
     const { computedColumns } = this.irionConfig[configIndex]
-    const computedColIndex = computedColumns.findIndex((computedCol) => computedCol.name === computedColumn.name)
+    const computedColIndex = computedColumns.findIndex((computedCol) => computedCol.id === computedColumn.id)
 
     switch (action) {
       case Actions.Add:
         this.irionConfig[configIndex].computedColumns = [...computedColumns, computedColumn]
         break
       case Actions.Update:
-        computedColumns[computedColIndex] = computedColumn
+        if (computedColIndex > -1) {
+          this.irionConfig[configIndex].computedColumns.splice(computedColIndex, 1, computedColumn)
+        }
         break
       case Actions.Delete:
-        computedColumns.splice(computedColIndex, 1)
+        if (computedColIndex > -1) {
+          this.irionConfig[configIndex].computedColumns.splice(computedColIndex, 1)
+        }
         break
     }
   }
@@ -614,7 +814,11 @@ class App extends React.Component<{}, AppState> {
     // this.resizeColumns(sheet, col, 2)
   }
 
-  addComputedColumn = (activeSheet: GC.Spread.Sheets.Worksheet) => {
+  toggleAddComputedModal = (isOpen: boolean) => {
+    this.setState({ isAddComputedColumnOpen: isOpen })
+  }
+
+  addComputedColumn = (activeSheet: GC.Spread.Sheets.Worksheet, newComputedColumn: AddComputedColumn) => {
     // open modal to set column's name & formula to replicate for each row of the table
 
     if (activeSheet) {
@@ -635,11 +839,17 @@ class App extends React.Component<{}, AppState> {
       const columnIndex = col - startingCol
       const computedColumnIndex = columnIndex + 1
 
-      const firstColumnName = table.getColumnName(0)
-      const secondColumnName = table.getColumnName(1)
+      // const firstColumnName = table.getColumnName(0)
+      // const secondColumnName = table.getColumnName(1)
 
-      const columnName = 'Formula'
-      const formula = `=[${firstColumnName}]+[${secondColumnName}]`
+      const { name: columnName, formula, id } = newComputedColumn
+      // const columnName = 'Formula'
+      // const formula = `=[${firstColumnName}]+[${secondColumnName}]`
+
+      if (columnName == null || formula == null) {
+        console.warn('No columnName or formula provided')
+        return
+      }
 
       table.insertColumns(columnIndex, 1, true)
       table.setColumnName(computedColumnIndex, columnName)
@@ -647,13 +857,13 @@ class App extends React.Component<{}, AppState> {
 
       // Update IrionConfig
       const computedColumn: ComputedColumn = {
+        id,
         index: computedColumnIndex,
         name: columnName,
         formula: formula,
       }
 
       this.updateComputedColumns(table.name(), activeSheet.name(), Actions.Add, computedColumn)
-
       this.wb1?.resumePaint()
     }
   }
@@ -802,7 +1012,12 @@ class App extends React.Component<{}, AppState> {
         bigButton: 'true',
         commandName: 'addCompColumn',
         execute: async (context: any, propertyName: any, fontItalicChecked: any) => {
-          this.addComputedColumn(context.Spread.getActiveSheet())
+          const activeSheet: GC.Spread.Sheets.Worksheet = context.Spread.getActiveSheet()
+
+          const boundedTable = getBoundedTable(activeSheet, this.irionConfig)
+          if (boundedTable) {
+            this.toggleAddComputedModal(true)
+          }
         },
       },
       editCompColumn: {
@@ -811,7 +1026,36 @@ class App extends React.Component<{}, AppState> {
         iconClass: 'ribbon-button-sheetgeneral',
         bigButton: 'true',
         commandName: 'editCompColumn',
-        execute: async (context: any, propertyName: any, fontItalicChecked: any) => {},
+        execute: async (context: any, propertyName: any, fontItalicChecked: any) => {
+          const activeSheet: GC.Spread.Sheets.Worksheet = context.Spread.getActiveSheet()
+          const col = activeSheet.getActiveColumnIndex()
+
+          const boundedTable = getBoundedTable(activeSheet, this.irionConfig)
+          if (boundedTable) {
+            const { table, tableConfig } = boundedTable
+
+            const tableName = table.name()
+            const currentColIndex = col - table.range().col
+            const columnName = table.getColumnName(currentColIndex)
+
+            const computedColumn = tableConfig?.computedColumns.find((computedCol) => {
+              return computedCol.name === columnName
+            })
+
+            if (computedColumn) {
+              // open modal
+              this.setState({
+                editComputedColumn: {
+                  ...this.state.editComputedColumn,
+                  isOpen: true,
+                  tableName,
+                  computedColumn: computedColumn ?? null,
+                },
+                // tableConfig: tableConfig ?? null,
+              })
+            }
+          }
+        },
       },
       delCompColumn: {
         title: 'Remove',
@@ -820,6 +1064,16 @@ class App extends React.Component<{}, AppState> {
         bigButton: 'true',
         commandName: 'delCompColumn',
         execute: async (context: any, propertyName: any, fontItalicChecked: any) => {},
+      },
+      resetIrionConfig: {
+        title: 'Reset',
+        text: 'Reset',
+        iconClass: 'ribbon-button-clear-celltype',
+        bigButton: 'true',
+        commandName: 'resetIrionConfig',
+        execute: async (context: any, propertyName: any, fontItalicChecked: any) => {
+          this.irionConfig = []
+        },
       },
     }
 
@@ -880,7 +1134,7 @@ class App extends React.Component<{}, AppState> {
             },
           },
           {
-            label: 'Export',
+            label: 'Clipboard',
             // thumbnailClass: 'ribbon-thumbnail-viewport',
             commandGroup: {
               children: [
@@ -910,7 +1164,19 @@ class App extends React.Component<{}, AppState> {
               children: [
                 {
                   direction: 'horizontal',
-                  commands: ['addCompColumn'], // , 'editCompColumn', 'delCompColumn'],
+                  commands: ['addCompColumn', 'editCompColumn'], // ,  'delCompColumn'],
+                },
+              ],
+            },
+          },
+          {
+            label: 'Debug',
+            // thumbnailClass: 'ribbon-thumbnail-save',
+            commandGroup: {
+              children: [
+                {
+                  direction: 'horizontal',
+                  commands: ['resetIrionConfig'], // , 'editCompColumn', 'delCompColumn'],
                 },
               ],
             },
