@@ -45,3 +45,10 @@ export const addMoreRoom = (
     sheet.addColumns(sheetColCount - 1, colsToAdd)
   }
 }
+
+export const getIrionConfigIndex = (irionConfig: IrionConfig[], sheet: string, tableName: string) => {
+  const configIndex = irionConfig.findIndex(
+    (item) => item.sheet === sheet && item.tableName === tableName // && item.row === row && item.col === col
+  )
+  return configIndex
+}

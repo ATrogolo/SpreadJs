@@ -14,21 +14,25 @@ import Dialog from '@material-ui/core/Dialog'
 import { DraggableComponent } from './DraggableComponent'
 
 import AddComputedColumnModal, { AddComputedColumn } from './AddComputedColumnModal'
-import { addMoreRoom, getBoundedTable } from './utils'
+import { addMoreRoom, getBoundedTable, getIrionConfigIndex } from './utils'
 
 // GC.Spread.Sheets.LicenseKey =
 //   'GrapeCity-Internal-Use-Only,362369852286222#B0vRARPV5NrR6LUhmN8YGe4k5LhlkbhJWaZVkSmBjellXUF5URz46a4N6RhhDNadjW7c6d4VES7MURnlHVXd5V7gnVwA7YxIkeYNXMwxGdqVzUlhVMzIUWxdXTwgTUJZlNvImdBJ4SW5GTExEezhVOOxWb7R7VKF7TaFnWYJ4L6c7NoN4RRNGSXVEaKJDTFVTYCNmMKNlUZNFMjNzSxgHRwhTMwQ4QsRVWlFTMjFmdUZjYyUXZRR6bXV6RBt6NDBHV8Z5drdWZtRUbCJHeZRFO8F6R5AzM4ljSXNjQ9gTMqBHah5UTKZWT6h6YihXU8Q6V7ckI0IyUiwiIyUUNzAjQwcjI0ICSiwCN9EzM9kjM4YTM0IicfJye#4Xfd5nIFVUSWJiOiMkIsICNx8idgAyUKBCZhVmcwNlI0IiTis7W0ICZyBlIsISM4ETNyADIxAjMxAjMwIjI0ICdyNkIsIybp9ie4lGbit6YhR7cuoCLt36YukHdpNWZwFmcn9iKiojIz5GRiwiI9RXaDVGchJ7RiojIh94QiwiIyIjM6gjMyUDO9YzMyYzMiojIklkIs4XZzxWYmpjIyNHZisnOiwmbBJye0ICRiwiI34TQQFUM6NlUvFjQ6J5dRJzbk3Ca4U6N8c5MxNmQ5JFRW3EWJxEayhFZ4FncPJndZRUahRzcFdnZGZUOpRGeSRVWiplUy8EWh9kV8gjTip5bNpkSSFGWvcVMYVTURlHcHVXMwJjU' as any
 // ;(GC.Spread.Sheets as any).Designer.LicenseKey =
 //   'GrapeCity-Internal-Use-Only,118434355471155#B0u5f7hlbHVHc8NjbktydGlVdsp5KYJ6Tw36M7gVcOJGO5QXOYBXMFdmUwxmU6VVZkJTeUxEW7p7TmF7Z9JFZhR5dDJHNoJWV5hFdwYUOpZzYiF6YRlkcaJ7MPdjRXJURr56Nr84cwYWaWZTMEBjbGJ6Uk9mY5FUQS5EWVp7Z4EDOFZUeUJ7SIp6STZ7UjRHaMVmTCdzSjpWeBJXQa54MohWOzolbSFHOtFTZVBHcLRTSo5UYipFU7NzQXJ7LD9GSzQ6bz24Lnplba3UclVDczJ6SzZjYnRnR49GV7ZVYNpkRrkXZRhkd6IFZNFlI0IyUiwiIGBTOEZUNyUjI0ICSiwCMxcDM6AjNxQTM0IicfJye&Qf35VfiklNFdjI0IyQiwiI4EjL6Bicl96ZpNXZE5yUKRWYlJHcTJiOi8kI1tlOiQmcQJCLiUTNzIzNwAyNwITMwIDMyIiOiQncDJCLi2WauoHdpxmYrNWY4NnLqwSbvNmL9RXajVGchJ7ZuoiI0IyctRkIsISe4l6QlBXYydkI0ISYONkIsISN5ETM7QTN5MDNzQDOxEjI0ICZJJye0ICRiwiI34TQwYDeJlUeHhEa9okZQhmaZ94UVdGUhNGe5UEeUVUWVVDU5o4N5ADNrkUOxN5NvQ5NBRFOGF4RjhlcVVmaTRUeVlnTVlGaQRER844RsVEO9AjbFJnSx8EMxQ5KZdlUNNXQtNEak3SVlrDbM' as any
 
+enum ResizeMode {
+  Cells = 0,
+  Rows = 1,
+}
+
 interface AppState {
-  designerMode: boolean
   show: boolean
-  showModalConfigurator: boolean
-  buttonCaption: string
   isAddComputedColumnOpen: boolean
+  isCommandConfigOpen: boolean
   editComputedColumn: { isOpen: boolean; tableName: string; computedColumn: ComputedColumn | null }
   tableConfig: IrionConfig | null
+  resizeMode: ResizeMode
 }
 
 export interface IrionConfig {
@@ -47,7 +51,7 @@ interface ComputedColumn {
   index: number
 }
 
-enum Actions {
+export enum Actions {
   Add = 0,
   Update = 1,
   Delete = 2,
@@ -58,7 +62,6 @@ interface Config {
   irionConfig: IrionConfig[]
 }
 
-type ICellButtonExtended = GC.Spread.Sheets.ICellButton & { id: number }
 type ICellRangeExtended = GC.Spread.Sheets.CellRange & { id: number }
 
 const SERVER_URL = 'https://jsonplaceholder.typicode.com'
@@ -90,11 +93,10 @@ class App extends React.Component<{}, AppState> {
     }
 
     this.state = {
-      designerMode: true,
       show: false,
-      showModalConfigurator: false,
-      buttonCaption: '',
       isAddComputedColumnOpen: false,
+      isCommandConfigOpen: false,
+      resizeMode: ResizeMode.Rows,
       editComputedColumn: INIT_EDIT_COMPUTEDCOL,
       tableConfig: null,
     }
@@ -112,21 +114,13 @@ class App extends React.Component<{}, AppState> {
     this.getRibbonTablesDropdown()
   }
 
-  showModalConfigurator = () => {
-    this.setState({ showModalConfigurator: true })
-  }
-
-  hideModalConfigurator = () => {
-    this.setState({ showModalConfigurator: false })
-  }
-
   getSelectedRangeFormula(e: any) {
     const a = document.getElementById('formulaBar')!
     a.textContent = this.fbx.text()
   }
 
   render() {
-    const { isAddComputedColumnOpen, editComputedColumn } = this.state
+    const { isAddComputedColumnOpen, isCommandConfigOpen, editComputedColumn, resizeMode, commandConfig } = this.state
 
     return (
       <>
@@ -152,14 +146,9 @@ class App extends React.Component<{}, AppState> {
 
         {/* Edit Computed Column Dialog */}
         {editComputedColumn.isOpen && editComputedColumn.computedColumn && (
-          <Dialog
-            open={editComputedColumn.isOpen}
-            PaperComponent={DraggableComponent}
-            aria-labelledby="draggable-dialog-title"
-            disableBackdropClick={false}
-          >
-            <div id="draggable-dialog-title" className="gc-sjsdesigner-dialog gc-designer-root en custom">
-              <div className="dialog-titlebar">
+          <Dialog open={editComputedColumn.isOpen} PaperComponent={DraggableComponent} disableBackdropClick={false}>
+            <div className="gc-sjsdesigner-dialog gc-designer-root en custom">
+              <div id="dialog-titlebar" className="dialog-titlebar">
                 <span className="dialog-titlebar-title">Edit column</span>
               </div>
 
@@ -179,9 +168,9 @@ class App extends React.Component<{}, AppState> {
                                 type="text"
                                 value={editComputedColumn.computedColumn.name}
                                 onChange={({ target: { value } }) => {
-                                  if (this.state.editComputedColumn.computedColumn) {
+                                  if (editComputedColumn.computedColumn) {
                                     const computedColumn = {
-                                      ...this.state.editComputedColumn.computedColumn,
+                                      ...editComputedColumn.computedColumn,
                                       name: value,
                                     }
 
@@ -207,9 +196,9 @@ class App extends React.Component<{}, AppState> {
                                 type="text"
                                 value={editComputedColumn.computedColumn.formula}
                                 onChange={({ target: { value } }) => {
-                                  if (this.state.editComputedColumn.computedColumn) {
+                                  if (editComputedColumn.computedColumn) {
                                     const computedColumn = {
-                                      ...this.state.editComputedColumn.computedColumn,
+                                      ...editComputedColumn.computedColumn,
                                       formula: value,
                                     }
 
@@ -231,6 +220,51 @@ class App extends React.Component<{}, AppState> {
                 </div>
               </div>
               <div className="dialog-footer">
+                <button
+                  type="button"
+                  className="gc-ui-button remove"
+                  onClick={() => {
+                    const activeSheet = this.wb1?.getActiveSheet()
+                    const { tableName, computedColumn } = this.state.editComputedColumn
+
+                    if (!activeSheet) {
+                      return
+                    }
+
+                    if (!tableName || !computedColumn) {
+                      return
+                    }
+
+                    const tableConfig = this.irionConfig.find((config) => config.tableName === tableName)
+
+                    if (tableConfig) {
+                      const { dataSource, row, col, tableName } = tableConfig
+
+                      const computedCol = tableConfig?.computedColumns.find(
+                        (computedCol) => computedCol.id === computedColumn.id
+                      )
+
+                      if (computedCol) {
+                        this.updateComputedColumns(tableName, activeSheet.name(), Actions.Delete, computedColumn)
+
+                        this.fetchData(dataSource).then((json) => {
+                          this.setTable(json, dataSource, row, col, tableName, activeSheet)
+                        })
+                      }
+                    }
+
+                    this.setState({ editComputedColumn: INIT_EDIT_COMPUTEDCOL })
+                  }}
+                >
+                  <span>Remove</span>
+                </button>
+                <button
+                  type="button"
+                  className="gc-ui-button"
+                  onClick={() => this.setState({ editComputedColumn: INIT_EDIT_COMPUTEDCOL })}
+                >
+                  <span>Cancel</span>
+                </button>
                 <button
                   type="button"
                   className="gc-ui-button"
@@ -272,70 +306,22 @@ class App extends React.Component<{}, AppState> {
                 >
                   <span>OK</span>
                 </button>
-                <button
-                  type="button"
-                  className="gc-ui-button"
-                  onClick={() => this.setState({ editComputedColumn: INIT_EDIT_COMPUTEDCOL })}
-                >
-                  <span>Cancel</span>
-                </button>
-                <button
-                  type="button"
-                  className="gc-ui-button"
-                  onClick={() => {
-                    const activeSheet = this.wb1?.getActiveSheet()
-                    const { tableName, computedColumn } = this.state.editComputedColumn
-
-                    if (!activeSheet) {
-                      return
-                    }
-
-                    if (!tableName || !computedColumn) {
-                      return
-                    }
-
-                    const tableConfig = this.irionConfig.find((config) => config.tableName === tableName)
-
-                    if (tableConfig) {
-                      const { dataSource, row, col, tableName } = tableConfig
-
-                      const computedCol = tableConfig?.computedColumns.find(
-                        (computedCol) => computedCol.id === computedColumn.id
-                      )
-
-                      if (computedCol) {
-                        this.updateComputedColumns(tableName, activeSheet.name(), Actions.Delete, computedColumn)
-
-                        // if (computedColIndex > -1) {
-                        //   tableConfig.computedColumns.splice(computedColIndex, 1)
-                        // }
-
-                        this.fetchData(dataSource).then((json) => {
-                          this.setTable(json, dataSource, row, col, tableName, activeSheet)
-                        })
-                      }
-                    }
-
-                    this.setState({ editComputedColumn: INIT_EDIT_COMPUTEDCOL })
-                  }}
-                >
-                  <span>Remove</span>
-                </button>
               </div>
             </div>
           </Dialog>
         )}
         <div className="toolbar">
-          {/* <button
-            className={designerModeCssClass}
-            onClick={() => this.setState({ designerMode: !this.state.designerMode })}
-          >
-            Designer Mode: {designerMode ? 'ON' : 'OFF'}
-          </button> */}
-          {/* {!designerMode && ( */}
-          {/* <> */}
           <button className="export-config" onClick={this.exportToWB2}>
             Export WB1 to WB2
+          </button>
+          <button
+            className="resize-mode"
+            onClick={() => {
+              const nextResizeMode = resizeMode === ResizeMode.Cells ? ResizeMode.Rows : ResizeMode.Cells
+              this.setState({ resizeMode: nextResizeMode })
+            }}
+          >
+            Resize Table: {(resizeMode === ResizeMode.Cells && 'Cells') || 'Rows'}
           </button>
           {/* <button
                 className="add-table"
@@ -515,73 +501,126 @@ class App extends React.Component<{}, AppState> {
     if (sheet) {
       this.wb1?.suspendPaint()
       this.wb2?.suspendPaint()
+
+      let data = dataSource === POSTS_SOURCE || dataSource === COMMENTS_SOURCE ? json.slice(0, 2) : json
+
+      if (tweakData) {
+        data = this.tweakData(data, dataSource)
+      }
+
+      const rowNumber = data.length
+      const columnNames = Object.keys(data[0])
+      const columnNumber = columnNames.length
+
+      // Add more rows / columns if there's no enough room
+      addMoreRoom(sheet, row, rowNumber, col, columnNumber)
+
+      let table = sheet.tables.findByName(tableName)
+      if (table == null) {
+        table = sheet.tables.add(tableName, row, col, rowNumber, columnNumber)
+
+        console.log('Sto inserendo la tabella ', tableName)
+      } else {
+        console.warn(
+          'La tabella è già definita nel foglio. Probabilmente è stata importata una configurazione precedente'
+        )
+      }
+
+      const columns: any[] = []
+      columnNames.forEach((columnName, index) => {
+        const column = new GC.Spread.Sheets.Tables.TableColumn(index, columnName)
+
+        columns.push(column)
+      })
+
+      table.autoGenerateColumns(true) // nonsense but it works when removing columns
+
+      let throwsError = false
       try {
-        let data = dataSource === POSTS_SOURCE || dataSource === COMMENTS_SOURCE ? json.slice(0, 2) : json
-
-        if (tweakData) {
-          data = this.tweakData(data, dataSource)
-        }
-
-        const rowNumber = data.length
-        const columnNames = Object.keys(data[0])
-        const columnNumber = columnNames.length
-
-        // Add more rows / columns if there's no enough room
-        addMoreRoom(sheet, row, rowNumber, col, columnNumber)
-
-        let table = sheet.tables.findByName(tableName)
-        if (table == null) {
-          table = sheet.tables.add(tableName, row, col, rowNumber, columnNumber)
-
-          console.log('Sto inserendo la tabella ', tableName)
-        } else {
-          console.warn(
-            'La tabella è già definita nel foglio. Probabilmente è stata importata una configurazione precedente'
-          )
-        }
-
-        const columns: any[] = []
-        columnNames.forEach((columnName, index) => {
-          const column = new GC.Spread.Sheets.Tables.TableColumn(index, columnName)
-
-          columns.push(column)
-        })
-
-        table.autoGenerateColumns(true) // nonsense but it works when removing columns
-
         table.bind(columns, '', data)
         table.bind(columns, '', data)
         // do it again for bug
         // #6. Thanks for the sample this looks like bug to me hence we have escalated this issue to the concerned team for further investigation.
         // Till then as a workaround you may call the bind method twice that should solve the issue.
         // Please refer to the following update sample and let us know if you face any issues. sample: https://codesandbox.io/s/blue-fast-qb68d?file=/src/index.js
-
-        const tableConfig = this.irionConfig.find((config) => {
-          return config.tableName === tableName
-        })
-
-        if (tableConfig && tableConfig.computedColumns.length > 0) {
-          tableConfig.computedColumns.forEach((computedCol) => {
-            const { index, name: columnName, formula } = computedCol
-
-            table.insertColumns(index - 1, 1, true)
-            table.setColumnName(index, columnName)
-            table.setColumnDataFormula(index, formula)
-          })
-        }
-
-        // this.fitColumns(sheet, col, columnNumber)
-        // this.resizeColumns(sheet, col, columnNumber)
       } catch (error) {
         console.error(error)
 
-        // this.wb1?.resumePaint()
-        // this.wb2?.resumePaint()
+        throwsError = true
+        if (this.state.resizeMode === ResizeMode.Rows) {
+          this.resizeTable(sheet, table, rowNumber, columnNumber)
+
+          table.bind(columns, '', data)
+          table.bind(columns, '', data)
+
+          throwsError = false
+        }
       } finally {
+        if (throwsError === false) {
+          // Add computed columns
+          const tableConfig = this.irionConfig.find((config) => {
+            return config.tableName === tableName
+          })
+
+          if (tableConfig && tableConfig.computedColumns.length > 0) {
+            const tableSize = table.range().colCount
+
+            tableConfig.computedColumns.forEach((computedCol) => {
+              const { name: columnName, formula } = computedCol
+              let { index } = computedCol
+
+              // If the computed column has an index greater than the table size,
+              // the computed column will be set at the end of the table.
+              if (index > tableSize) {
+                index = tableSize
+              }
+
+              table.insertColumns(index - 1, 1, true)
+              table.setColumnName(index, columnName)
+              table.setColumnDataFormula(index, formula)
+            })
+          }
+
+          // this.fitColumns(sheet, col, columnNumber)
+          // this.resizeColumns(sheet, col, columnNumber)
+        }
+
         this.wb1?.resumePaint()
         this.wb2?.resumePaint()
       }
     }
+  }
+
+  resizeTable = (
+    sheet: GC.Spread.Sheets.Worksheet,
+    table: GC.Spread.Sheets.Tables.Table,
+    rowNumber: number,
+    columnNumber: number
+  ) => {
+    const currentRange = table.range()
+    const { row, rowCount, col, colCount } = currentRange
+
+    // Add rows
+    const lastRowIndex = row + rowCount
+    const rowsToAdd = rowNumber - (rowCount - 1) // rowCount counts header too
+    if (rowsToAdd > 0) {
+      sheet.addRows(lastRowIndex, rowsToAdd)
+    }
+
+    // Add columns
+    let colsToAdd = 0
+    const configIndex = getIrionConfigIndex(this.irionConfig, sheet.name(), table.name())
+    if (configIndex > -1) {
+      const computedColumnsNumber = this.irionConfig[configIndex].computedColumns.length
+
+      const lastColIndex = col + colCount
+      colsToAdd = columnNumber - (colCount - computedColumnsNumber)
+      if (colsToAdd > 0) {
+        sheet.addColumns(lastColIndex, colsToAdd)
+      }
+    }
+
+    sheet.tables.resize(table.name(), new GC.Spread.Sheets.Range(row, col, rowCount + rowsToAdd, colCount + colsToAdd))
   }
 
   fetchData = (dataMember: string) => {
@@ -589,9 +628,7 @@ class App extends React.Component<{}, AppState> {
   }
 
   updateIrionConfig = (tableName: string, row: number, col: number, sheet: string, dataSource: string) => {
-    const index = this.irionConfig.findIndex(
-      (item) => item.sheet === sheet && item.tableName === tableName // && item.row === row && item.col === col
-    )
+    const configIndex = getIrionConfigIndex(this.irionConfig, sheet, tableName)
 
     const tableConfig: IrionConfig = {
       tableName,
@@ -602,18 +639,15 @@ class App extends React.Component<{}, AppState> {
       computedColumns: [],
     }
 
-    if (index !== -1) {
-      this.irionConfig[index] = tableConfig
+    if (configIndex !== -1) {
+      this.irionConfig[configIndex] = tableConfig
     } else {
       this.irionConfig.push(tableConfig)
     }
   }
 
   updateComputedColumns = (tableName: string, sheet: string, action: Actions, computedColumn: ComputedColumn) => {
-    const configIndex = this.irionConfig.findIndex(
-      (item) => item.sheet === sheet && item.tableName === tableName // && item.row === row && item.col === col
-    )
-
+    const configIndex = getIrionConfigIndex(this.irionConfig, sheet, tableName)
     if (configIndex === -1) {
       return
     }
@@ -718,12 +752,12 @@ class App extends React.Component<{}, AppState> {
 
   insertButtons = (sheet: GC.Spread.Sheets.Worksheet) => {
     let id1 = new Date().getTime()
-    const row = sheet.getActiveRowIndex()
-    const col = sheet.getActiveColumnIndex()
+    const row = 4 //sheet.getActiveRowIndex()
+    const col = 6 //sheet.getActiveColumnIndex()
 
     const cellType: any = new GC.Spread.Sheets.CellTypes.Button()
     cellType.buttonBackColor('#FFFF00')
-    cellType.text('CellType Button')
+    cellType.text('Button')
     cellType.id = id1
 
     // Insert cellType
@@ -732,31 +766,31 @@ class App extends React.Component<{}, AppState> {
     cell.cellType(cellType)
 
     // Insert cellStyle
-    let id2 = new Date().getTime()
-    const dropdownStylefunction = new GC.Spread.Sheets.Style()
-    dropdownStylefunction.cellButtons = [
-      {
-        buttonBackColor: '#94cefd',
-        caption: 'CellStyle Button',
-        id: id2,
-        // captionAlign: GC.Spread.Sheets.CaptionAlignment.left,
-        // enabled: true,
-        // hoverBackColor: '#FF0000',
-        position: GC.Spread.Sheets.ButtonPosition.left,
-        useButtonStyle: true,
-        // visibility: GC.Spread.Sheets.ButtonVisibility.always,
-        width: 125,
-        // imageType: GC.Spread.Sheets.ButtonImageType.none,
-        command: (sheet: GC.Spread.Sheets.Worksheet, row: number, col: number, option: any) => {
-          const cellButton: ICellButtonExtended = sheet.getCell(row, col).cellButtons()?.[0]
-          console.log('ButtonClicked', cellButton.id)
+    // let id2 = new Date().getTime()
+    // const dropdownStylefunction = new GC.Spread.Sheets.Style()
+    // dropdownStylefunction.cellButtons = [
+    //   {
+    //     buttonBackColor: '#94cefd',
+    //     caption: 'CellStyle Button',
+    //     id: id2,
+    //     // captionAlign: GC.Spread.Sheets.CaptionAlignment.left,
+    //     // enabled: true,
+    //     // hoverBackColor: '#FF0000',
+    //     position: GC.Spread.Sheets.ButtonPosition.left,
+    //     useButtonStyle: true,
+    //     // visibility: GC.Spread.Sheets.ButtonVisibility.always,
+    //     width: 125,
+    //     // imageType: GC.Spread.Sheets.ButtonImageType.none,
+    //     command: (sheet: GC.Spread.Sheets.Worksheet, row: number, col: number, option: any) => {
+    //       const cellButton: ICellButtonExtended = sheet.getCell(row, col).cellButtons()?.[0]
+    //       console.log('ButtonClicked', cellButton.id)
 
-          // Get Command from IrionConfig and trigger it
-        },
-      },
-    ] as ICellButtonExtended[]
+    //       // Get Command from IrionConfig and trigger it
+    //     },
+    //   },
+    // ] as ICellButtonExtended[]
 
-    sheet.setStyle(row, col + 1, dropdownStylefunction)
+    // sheet.setStyle(row, col + 1, dropdownStylefunction)
 
     // this.resizeColumns(sheet, col, 2)
   }
@@ -980,6 +1014,8 @@ class App extends React.Component<{}, AppState> {
         },
       },
     }
+
+    config.contextMenu = [...config.contextMenu, 'configCommand']
 
     //genero la lista delle tabelle per il ribbon e relative azioni
     this.getRibbonTablesDropdown()

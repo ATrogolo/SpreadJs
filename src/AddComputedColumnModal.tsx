@@ -3,6 +3,8 @@ import Dialog from '@material-ui/core/Dialog'
 import { useState } from 'react'
 import { DraggableComponent } from './DraggableComponent'
 
+import './AddComputedColumnModal.css'
+
 const INIT_ADD_COMPUTEDCOL: AddComputedColumn = { name: '', formula: '', id: -1 }
 
 interface AddComputedColumnModalProps {
@@ -27,14 +29,9 @@ const AddComputedColumnModal = (props: AddComputedColumnModalProps) => {
   }
 
   return (
-    <Dialog
-      open={props.isOpen}
-      PaperComponent={DraggableComponent}
-      aria-labelledby="draggable-dialog-title"
-      disableBackdropClick={false}
-    >
-      <div id="draggable-dialog-title" className="gc-sjsdesigner-dialog gc-designer-root en custom">
-        <div className="dialog-titlebar">
+    <Dialog open={props.isOpen} PaperComponent={DraggableComponent} disableBackdropClick={false}>
+      <div className="gc-sjsdesigner-dialog gc-designer-root en custom">
+        <div id="dialog-titlebar" className="dialog-titlebar">
           <span className="dialog-titlebar-title">Add new</span>
         </div>
 

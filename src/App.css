@@ -50,6 +50,10 @@
   cursor: pointer;
 }
 
+.toolbar button.resize-mode {
+  background: #e0660f;
+}
+
 .designer-mode.on {
   background: #006500;
 }
@@ -83,4 +87,11 @@
 
 .gc-sjsdesigner-dialog.custom {
   display: block;
+}
+
+/* Add/Edit computed column - Remove button */
+.gc-ui-button.remove,
+.gc-sjsdesigner-dialog .dialog-footer button.remove:hover,
+.config-command-modal .btn-remove {
+  color: red;
 }
