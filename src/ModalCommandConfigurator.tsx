@@ -144,7 +144,6 @@ export class ModalCommandConfigurator extends React.Component<
 
     return isOpen ? (
       <Dialog
-        // style={{ inset: 'unset !important', top: '15% !important', left: '45% !important' }}
         open={this.props.isOpen}
         classes={{
           paper: 'paper-cmd-config',

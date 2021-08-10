@@ -242,30 +242,6 @@
   overflow: auto;
 }
 
-/* .MuiDialog-paperWidthSm {
-  width: 330px;
-  height: 325px;
-} */
-
-/* .MuiPaper-root {
-  background-color: #fff0 !important;
-}
-
-.MuiDialog-paper {
-  margin: 0px !important;
-}
-
-.MuiDialogTitle-root {
-  padding: 0px !important;
-  height: 5px;
-
-  z-index: 3;
-}
-
-.MuiPaper-elevation24 {
-  box-shadow: none !important;
-} */
-
 .MuiDialog-root > .MuiBackdrop-root {
   background-color: #aaaaaa;
   opacity: 0.3 !important;
@@ -274,10 +250,4 @@
   bottom: unset !important;
   left: unset !important;
   right: unset !important; */
-}
-
-.MuiDialog-root {
-  inset: unset !important;
-  top: 15% !important;
-  left: 45% !important;
 }
