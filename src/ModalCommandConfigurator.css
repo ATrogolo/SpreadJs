@@ -1,3 +1,88 @@
+/*  NEW CSS */
+
+.gc-sjsdesigner-dialog.custom.config-command-modal {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  width: 100%;
+  border: none;
+}
+
+.config-command-modal .config-command-container {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  padding: 10px;
+}
+
+.config-command-modal .config-command-container .config-parameters {
+  flex: 1;
+}
+
+.config-parameters .labelSelect {
+  padding: 10px 0;
+}
+
+.config-parameters .parameter-wrapper {
+  display: flex;
+  justify-content: space-evenly;
+  align-items: center;
+  margin: 5px 0px;
+}
+
+.config-parameters .parameters-list {
+  width: 40%;
+}
+
+.config-parameters .parameter-value {
+  height: 22px;
+  width: 40%;
+}
+
+.config-parameters .parameter-wrapper .remove-icon {
+  height: 20px;
+  width: 20px;
+  background-image: url(data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0iVVRGLTgiPz4KPHN2ZyB3aWR0aD0iMTZweCIgaGVpZ2h0PSIxNnB4IiB2aWV3Qm94PSIwIDAgMTYgMTYiIHZlcnNpb249IjEuMSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIiB4bWxuczp4bGluaz0iaHR0cDovL3d3dy53My5vcmcvMTk5OS94bGluayI+CiAgICA8IS0tIEdlbmVyYXRvcjogU2tldGNoIDU1LjIgKDc4MTgxKSAtIGh0dHBzOi8vc2tldGNoYXBwLmNvbSAtLT4KICAgIDx0aXRsZT5UcmVlIGl0ZW0tRGVsZXRlPC90aXRsZT4KICAgIDxkZXNjPkNyZWF0ZWQgd2l0aCBTa2V0Y2guPC9kZXNjPgogICAgPGcgaWQ9IlRyZWUtaXRlbS1EZWxldGUiIHN0cm9rZT0ibm9uZSIgc3Ryb2tlLXdpZHRoPSIxIiBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPgogICAgICAgIDxnIGlkPSLnvJbnu4QtNSI+CiAgICAgICAgICAgIDxyZWN0IGlkPSLnn6nlvaIiIGZpbGw9IiNFNjUyNDkiIHg9IjAiIHk9IjAiIHdpZHRoPSIxNiIgaGVpZ2h0PSIxNiIgcng9IjgiPjwvcmVjdD4KICAgICAgICAgICAgPHBvbHlnb24gaWQ9Iui3r+W+hCIgZmlsbD0iI0ZGRkZGRiIgcG9pbnRzPSI2LjY2NjY2NjY3IDggNCA1LjMzMzMzMzMzIDUuMzMzMzMzMzMgNCA4IDYuNjY2NjY2NjcgMTAuNjY2NjY2NyA0IDEyIDUuMzMzMzMzMzMgOS4zMzMzMzMzMyA4IDEyIDEwLjY2NjY2NjcgMTAuNjY2NjY2NyAxMiA4IDkuMzMzMzMzMzMgNS4zMzMzMzMzMyAxMiA0IDEwLjY2NjY2NjciPjwvcG9seWdvbj4KICAgICAgICA8L2c+CiAgICA8L2c+Cjwvc3ZnPg==);
+  background-size: contain;
+}
+
+.add-btn-wrapper {
+  display: flex;
+  justify-content: center;
+  padding: 10px 0;
+}
+
+.add-btn-wrapper .add-btn {
+  border: 1px solid #d3d3d3;
+  /* border: 1px solid #007ae2; */
+  padding: 3px 0;
+  background-color: #e6e6e6;
+  min-width: 80px;
+  margin-right: 10px;
+  cursor: pointer;
+  font-family: 'Segoe UI', Calibri, Thonburi, Arial, Verdana, sans-serif, 'Mongolian Baiti', 'Microsoft Yi Baiti',
+    'Javanese Text';
+}
+
+.add-btn-wrapper .add-btn:hover {
+  border: 1px solid #65ade7;
+  background-color: #e5f1fb;
+  color: #212121;
+}
+
+.config-command-modal .buttons-bar {
+  border-top: 1px solid #d6d6d6;
+}
+
+/* Override to create a wider modal */
+.MuiDialog-container > .paper-cmd-config {
+  width: 600px;
+  height: 500px;
+  background-color: #f0f0f0;
+}
+
+/* OLD CSS */
+
 .modal {
   position: fixed;
   z-index: 1;
@@ -157,12 +242,12 @@
   overflow: auto;
 }
 
-.MuiDialog-paperWidthSm {
+/* .MuiDialog-paperWidthSm {
   width: 330px;
   height: 325px;
-}
+} */
 
-.MuiPaper-root {
+/* .MuiPaper-root {
   background-color: #fff0 !important;
 }
 
@@ -179,7 +264,7 @@
 
 .MuiPaper-elevation24 {
   box-shadow: none !important;
-}
+} */
 
 .MuiDialog-root > .MuiBackdrop-root {
   background-color: #aaaaaa;
@@ -195,9 +280,4 @@
   inset: unset !important;
   top: 15% !important;
   left: 45% !important;
-}
-
-.getButton {
-  border-radius: 50px;
-  font-size: 10px;
 }

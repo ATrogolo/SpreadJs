@@ -9,12 +9,13 @@ import '@grapecity/spread-sheets/styles/gc.spread.sheets.excel2013white.css'
 
 import './App.css'
 import { Modal } from './Modal'
-import { ModalCommandConfigurator } from './ModalCommandConfigurator'
+import { Command, ModalCommandConfigurator, Parameter } from './ModalCommandConfigurator'
 import Dialog from '@material-ui/core/Dialog'
 import { DraggableComponent } from './DraggableComponent'
 
 import AddComputedColumnModal, { AddComputedColumn } from './AddComputedColumnModal'
 import { addMoreRoom, getBoundedTable, getIrionConfigIndex } from './utils'
+import { schema } from './schema'
 
 // GC.Spread.Sheets.LicenseKey =
 //   'GrapeCity-Internal-Use-Only,362369852286222#B0vRARPV5NrR6LUhmN8YGe4k5LhlkbhJWaZVkSmBjellXUF5URz46a4N6RhhDNadjW7c6d4VES7MURnlHVXd5V7gnVwA7YxIkeYNXMwxGdqVzUlhVMzIUWxdXTwgTUJZlNvImdBJ4SW5GTExEezhVOOxWb7R7VKF7TaFnWYJ4L6c7NoN4RRNGSXVEaKJDTFVTYCNmMKNlUZNFMjNzSxgHRwhTMwQ4QsRVWlFTMjFmdUZjYyUXZRR6bXV6RBt6NDBHV8Z5drdWZtRUbCJHeZRFO8F6R5AzM4ljSXNjQ9gTMqBHah5UTKZWT6h6YihXU8Q6V7ckI0IyUiwiIyUUNzAjQwcjI0ICSiwCN9EzM9kjM4YTM0IicfJye#4Xfd5nIFVUSWJiOiMkIsICNx8idgAyUKBCZhVmcwNlI0IiTis7W0ICZyBlIsISM4ETNyADIxAjMxAjMwIjI0ICdyNkIsIybp9ie4lGbit6YhR7cuoCLt36YukHdpNWZwFmcn9iKiojIz5GRiwiI9RXaDVGchJ7RiojIh94QiwiIyIjM6gjMyUDO9YzMyYzMiojIklkIs4XZzxWYmpjIyNHZisnOiwmbBJye0ICRiwiI34TQQFUM6NlUvFjQ6J5dRJzbk3Ca4U6N8c5MxNmQ5JFRW3EWJxEayhFZ4FncPJndZRUahRzcFdnZGZUOpRGeSRVWiplUy8EWh9kV8gjTip5bNpkSSFGWvcVMYVTURlHcHVXMwJjU' as any
@@ -33,6 +34,7 @@ interface AppState {
   editComputedColumn: { isOpen: boolean; tableName: string; computedColumn: ComputedColumn | null }
   tableConfig: IrionConfig | null
   resizeMode: ResizeMode
+  commandConfig: CommandConfig | null
 }
 
 export interface IrionConfig {
@@ -42,6 +44,12 @@ export interface IrionConfig {
   sheet: string
   dataSource: string
   computedColumns: ComputedColumn[]
+}
+
+export interface CommandConfig {
+  id: number
+  name: string
+  parameters: Parameter[]
 }
 
 interface ComputedColumn {
@@ -99,6 +107,7 @@ class App extends React.Component<{}, AppState> {
       resizeMode: ResizeMode.Rows,
       editComputedColumn: INIT_EDIT_COMPUTEDCOL,
       tableConfig: null,
+      commandConfig: null,
     }
 
     this.ribbonConfig = this.getRibbonConfig()
@@ -125,15 +134,11 @@ class App extends React.Component<{}, AppState> {
     return (
       <>
         <ModalCommandConfigurator
-          showModalConfigurator={this.state.showModalConfigurator}
-          onClose={this.hideModalConfigurator}
-          designerMode={this.state.designerMode}
-          getSelectedRangeFormula={(e: any) => {
-            this.getSelectedRangeFormula(e)
-          }}
-          spreadSheet={GC.Spread}
-          fbx={this.fbx}
-          buttonCaption={this.state.buttonCaption}
+          isOpen={isCommandConfigOpen}
+          toggleCommandConfigModal={this.toggleCommandConfigModal}
+          schema={schema}
+          commandConfig={commandConfig}
+          setCommand={this.setCommand}
         ></ModalCommandConfigurator>
 
         {/* Add New Computed Column Dialog */}
@@ -371,7 +376,6 @@ class App extends React.Component<{}, AppState> {
     this.wb1 = workBook
     const sheet = workBook.getActiveSheet()
 
-    // this.insertButtons(sheet)
     // Bind events
     this.bindEvents(this.wb1, sheet)
 
@@ -795,6 +799,10 @@ class App extends React.Component<{}, AppState> {
     // this.resizeColumns(sheet, col, 2)
   }
 
+  toggleCommandConfigModal = (isOpen: boolean) => {
+    this.setState({ isCommandConfigOpen: isOpen })
+  }
+
   toggleAddComputedModal = (isOpen: boolean) => {
     this.setState({ isAddComputedColumnOpen: isOpen })
   }
@@ -849,6 +857,38 @@ class App extends React.Component<{}, AppState> {
     }
   }
 
+  setCommand = (action: Actions, command: Command) => {
+    const activeSheet = this.wb1?.getActiveSheet()
+    if (activeSheet) {
+      const row = activeSheet.getActiveRowIndex()
+      const col = activeSheet.getActiveColumnIndex()
+      const cellType = activeSheet.getCellType(row, col) as any
+
+      const id = cellType.id ?? new Date().getTime()
+
+      // Search command with provided "id"
+      const index = -1
+
+      if (index === -1) {
+        // New
+        if (action === Actions.Delete) {
+          return
+        }
+
+        // Update IrionConfig
+        // this.irionConfig.commands.push(command)
+      } else {
+        // Found
+        // Update IrionConfig
+        if (action === Actions.Delete) {
+          // this.irionConfig.commands.splice(index, 1)
+        } else {
+          // this.irionConfig.commands.splice(index, 1, command)
+        }
+      }
+    }
+  }
+
   getRibbonConfig = () => {
     // config1.getCommand().cellType.subCommands.push("commandWindosButtonConfiguration")
     const config = (GC.Spread.Sheets as any).Designer.DefaultConfig
@@ -887,34 +927,40 @@ class App extends React.Component<{}, AppState> {
         type: 'dropdown',
       },
       configCommand: {
-        title: 'config Command',
-        text: 'Command',
+        title: 'Config Button',
+        text: 'Config Command',
         iconClass: 'ribbon-button-cellstates',
         bigButton: true,
-        commandName: 'ribbonButtonButtonCellType',
+        commandName: 'configCommand',
         useButtonStyle: true,
         execute: async (context: any, propertyName: any, fontItalicChecked: any) => {
           const activeSheet = context.Spread.getActiveSheet()
           const row = activeSheet.getActiveRowIndex()
           const col = activeSheet.getActiveColumnIndex()
-          const cellType = activeSheet.getCellType(row, col)
+          const cellType = activeSheet.getCellType(row, col) as any
 
-          if (cellType instanceof GC.Spread.Sheets.CellTypes.Button) {
-            const cellType = activeSheet.getCellType(row, col) as any
-            cellType.id = 'ciao'
-            //bisogna aggiungere la logica dell'id
-            // se c'è un id allora apri la modale ? se esiste una configurazione esistente mostrala in modale : mostra modale da configurare
-            //se non esiste un id allora fai finta di nulla e lascia fare al default
-            this.showModalConfigurator()
-            var fbx = new GC.Spread.Sheets.FormulaTextBox.FormulaTextBox(document.getElementById('formulaBar')!, {
-              rangeSelectMode: true,
-              absoluteReference: false,
-            })
+          const isButtonCellType = cellType instanceof GC.Spread.Sheets.CellTypes.Button
+          if (isButtonCellType) {
+            const id = cellType.id
+            if (id) {
+              // Search button config in IrionConfig
+            } else {
+              // New button
+              this.setState({
+                commandConfig: null,
+              })
+            }
+            this.toggleCommandConfigModal(true)
 
-            fbx.workbook(context.Spread)
-            this.fbx = fbx
+            // var fbx = new GC.Spread.Sheets.FormulaTextBox.FormulaTextBox(document.getElementById('formulaBar')!, {
+            //   rangeSelectMode: true,
+            //   absoluteReference: false,
+            // })
+
+            // fbx.workbook(context.Spread)
+            // this.fbx = fbx
           } else {
-            window.alert('Devi selezionare un bottone')
+            window.alert('Please select a button')
           }
         },
       },
