@@ -16,6 +16,7 @@ import { DraggableComponent } from './DraggableComponent'
 import AddComputedColumnModal, { AddComputedColumn } from './AddComputedColumnModal'
 import { addMoreRoom, getBoundedTable, getIrionConfigIndex } from './utils'
 import { schema } from './schema'
+import { getOrders } from './orders'
 
 // GC.Spread.Sheets.LicenseKey =
 //   'GrapeCity-Internal-Use-Only,362369852286222#B0vRARPV5NrR6LUhmN8YGe4k5LhlkbhJWaZVkSmBjellXUF5URz46a4N6RhhDNadjW7c6d4VES7MURnlHVXd5V7gnVwA7YxIkeYNXMwxGdqVzUlhVMzIUWxdXTwgTUJZlNvImdBJ4SW5GTExEezhVOOxWb7R7VKF7TaFnWYJ4L6c7NoN4RRNGSXVEaKJDTFVTYCNmMKNlUZNFMjNzSxgHRwhTMwQ4QsRVWlFTMjFmdUZjYyUXZRR6bXV6RBt6NDBHV8Z5drdWZtRUbCJHeZRFO8F6R5AzM4ljSXNjQ9gTMqBHah5UTKZWT6h6YihXU8Q6V7ckI0IyUiwiIyUUNzAjQwcjI0ICSiwCN9EzM9kjM4YTM0IicfJye#4Xfd5nIFVUSWJiOiMkIsICNx8idgAyUKBCZhVmcwNlI0IiTis7W0ICZyBlIsISM4ETNyADIxAjMxAjMwIjI0ICdyNkIsIybp9ie4lGbit6YhR7cuoCLt36YukHdpNWZwFmcn9iKiojIz5GRiwiI9RXaDVGchJ7RiojIh94QiwiIyIjM6gjMyUDO9YzMyYzMiojIklkIs4XZzxWYmpjIyNHZisnOiwmbBJye0ICRiwiI34TQQFUM6NlUvFjQ6J5dRJzbk3Ca4U6N8c5MxNmQ5JFRW3EWJxEayhFZ4FncPJndZRUahRzcFdnZGZUOpRGeSRVWiplUy8EWh9kV8gjTip5bNpkSSFGWvcVMYVTURlHcHVXMwJjU' as any
@@ -72,6 +73,7 @@ interface Config {
 
 type ICellRangeExtended = GC.Spread.Sheets.CellRange & { id: number }
 
+const DEBUG = true
 const SERVER_URL = 'https://jsonplaceholder.typicode.com'
 const POSTS_SOURCE = 'Posts'
 const USERS_SOURCE = 'Users'
@@ -82,6 +84,9 @@ const DATASOURCES = [POSTS_SOURCE, USERS_SOURCE, TODOS_SOURCE, COMMENTS_SOURCE]
 const WITH_BINDING = 'With Bindings'
 const WITHOUT_BINDING = 'Without Bindings'
 const EXPORT_MODE = [WITH_BINDING, WITHOUT_BINDING]
+const START_PERFORMANCE_TEST = false
+const PERF_ROWS = 1000
+const PERF_COLS = 14
 
 const INIT_EDIT_COMPUTEDCOL = { isOpen: false, tableName: '', computedColumn: null }
 
@@ -379,6 +384,44 @@ class App extends React.Component<{}, AppState> {
     // Bind events
     this.bindEvents(this.wb1, sheet)
 
+    // DEBUG
+    if (DEBUG) {
+      if (sheet) {
+        const row = sheet.getActiveRowIndex()
+        const col = sheet.getActiveColumnIndex()
+        this.wb1.suspendPaint()
+        const tableUniqueName = POSTS_SOURCE + '_' + new Date().getTime()
+        this.fetchData(POSTS_SOURCE).then((json) => {
+          this.setTable(json, POSTS_SOURCE, row, col, tableUniqueName, sheet)
+          this.updateIrionConfig(tableUniqueName, row, col, sheet.name(), POSTS_SOURCE)
+          const table = sheet.tables.findByName(tableUniqueName)
+          if (table) {
+            const columnIndex = 1,
+              computedColumnIndex = columnIndex + 1
+            const columnName = 'A'
+            const formula = '=[id]+100'
+            table.insertColumns(columnIndex, 1, true)
+            table.setColumnName(computedColumnIndex, columnName)
+            table.setColumnDataFormula(computedColumnIndex, formula)
+            // Update IrionConfig
+            const id = new Date().getTime()
+            const computedColumn: ComputedColumn = {
+              id,
+              index: computedColumnIndex,
+              name: columnName,
+              formula: formula,
+            }
+            this.updateComputedColumns(tableUniqueName, sheet.name(), Actions.Add, computedColumn)
+            this.wb1?.resumePaint()
+          }
+        })
+        this.insertButtons(sheet)
+      }
+    }
+
+    if (START_PERFORMANCE_TEST) {
+      this.startPerformanceTests()
+    }
     // Status Bar
     // workBook.suspendPaint()
     // const statusBarElement = document.getElementById('statusBar')
@@ -1352,5 +1395,80 @@ class App extends React.Component<{}, AppState> {
       }
     )
   }
+
+  /* Performance test to insert multiple table in a single shot measuring performance */
+  startPerformanceTests = () => {
+    const sheet = this.wb1?.getActiveSheet()
+    if (sheet) {
+      this.performanceTest(sheet, 0, 0, 50000, undefined)
+      this.performanceTest(sheet, 0, 15, 5, 3)
+    }
+
+    this.wb1?.addSheet(1, new GC.Spread.Sheets.Worksheet('PerfSheet'))
+
+    const perfSheet = this.wb1?.getSheetFromName('PerfSheet')
+    if (perfSheet) {
+      this.performanceTest(perfSheet, 0, 0, 50000, undefined)
+      this.performanceTest(perfSheet, 0, 15, 5, 3)
+    }
+  }
+
+  performanceTest = (sheet: GC.Spread.Sheets.Worksheet, row: number, col: number, rows?: number, cols?: number) => {
+    const data = this.sizeOrdersTable(rows, cols)
+
+    if (sheet) {
+      const t0 = performance.now()
+      const tableUniqueName = 'Orders_' + new Date().getTime()
+      this.setTable(data, '', row, col, tableUniqueName, sheet)
+      const t1 = performance.now()
+
+      console.log('%cTime spent to insert data: ' + Math.floor(t1 - t0) / PERF_ROWS + ' sec', 'color: orange')
+    }
+  }
+
+  sizeOrdersTable = (rows?: number, cols?: number) => {
+    let data = getOrders()
+
+    if (rows && rows < PERF_ROWS) {
+      data = data.slice(0, rows)
+    }
+    if (cols && cols < PERF_COLS) {
+      data = data.map((row: any) => {
+        const keys = Object.keys(row)
+
+        let key
+        for (let i = cols; i < PERF_COLS; i++) {
+          key = keys[i]
+          delete row[key]
+        }
+
+        return row
+      })
+    }
+
+    if (rows && rows > PERF_ROWS) {
+      for (let i = PERF_ROWS; i < rows; i++) {
+        // Add new row
+        const randomIndex = Math.floor(Math.random() * PERF_ROWS)
+
+        const newItem = { ...data[randomIndex], id: i }
+        data.push(newItem)
+      }
+    }
+    if (cols && cols > PERF_COLS) {
+      data = data.map((row: any) => {
+        let key
+        for (let i = PERF_COLS; i < cols; i++) {
+          key = `A${i}`
+          row[key] = Math.floor(Math.random() * PERF_ROWS)
+        }
+
+        return row
+      })
+    }
+
+    return data
+  }
+  /* End of section perform tests */
 }
 export default App
