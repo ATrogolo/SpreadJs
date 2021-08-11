@@ -564,13 +564,22 @@ class App extends React.Component<{}, AppState> {
 
       let table = sheet.tables.findByName(tableName)
       if (table == null) {
-        table = sheet.tables.add(tableName, row, col, rowNumber, columnNumber)
+        try {
+          table = sheet.tables.add(tableName, row, col, rowNumber, columnNumber)
+          console.log('Inserting table ', tableName)
+        } catch (error) {
+          const { message } = error
+          this.wb1?.resumePaint()
+          this.wb2?.resumePaint()
 
-        console.log('Sto inserendo la tabella ', tableName)
-      } else {
-        console.warn(
-          'La tabella è già definita nel foglio. Probabilmente è stata importata una configurazione precedente'
-        )
+          // Table starts where another table is already defined
+          if (message.includes('intersected')) {
+            alert(message)
+          } else {
+            console.error('Error: ', message)
+          }
+          return
+        }
       }
 
       const columns: any[] = []
