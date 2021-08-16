@@ -324,7 +324,7 @@ class App extends React.Component<{}, AppState> {
           <button className="export-config" onClick={this.exportToWB2}>
             Export WB1 to WB2
           </button>
-          <button
+          {/* <button
             className="resize-mode"
             onClick={() => {
               const nextResizeMode = resizeMode === ResizeMode.Cells ? ResizeMode.Rows : ResizeMode.Cells
@@ -332,6 +332,7 @@ class App extends React.Component<{}, AppState> {
             }}
           >
             Resize Table: {(resizeMode === ResizeMode.Cells && 'Cells') || 'Rows'}
+          </button> */}
           </button>
           {/* <button
                 className="add-table"
@@ -1111,6 +1112,20 @@ class App extends React.Component<{}, AppState> {
           this.irionConfig = []
         },
       },
+      resizeTableStrategy: {
+        title: 'Add/delete cells',
+        text: 'Add/delete cells',
+        type: 'checkbox',
+        // checked: 'true',
+        commandName: 'resizeTableStrategy',
+        execute: async (context: any, propertyName: any, fontItalicChecked: any) => {
+          const nextResizeMode = this.state.resizeMode === ResizeMode.Cells ? ResizeMode.Rows : ResizeMode.Cells
+          this.setState({ resizeMode: nextResizeMode })
+        },
+        getState: (context: any) => {
+          return this.state.resizeMode === ResizeMode.Cells ? true : false
+        },
+      },
     }
 
     config.contextMenu = [...config.contextMenu, 'configCommand']
@@ -1213,8 +1228,8 @@ class App extends React.Component<{}, AppState> {
             commandGroup: {
               children: [
                 {
-                  direction: 'horizontal',
-                  commands: ['resetIrionConfig'],
+                  direction: 'vertical',
+                  commands: ['resetIrionConfig', 'resizeTableStrategy'],
                 },
               ],
             },
