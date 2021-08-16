@@ -115,6 +115,45 @@ class App extends React.Component<{}, AppState> {
       commandConfig: null,
     }
 
+    const dialogGetRangeTemplate = {
+      title: 'demo',
+      content: [
+        {
+          type: 'ColumnSet',
+          children: [
+            {
+              type: 'Column',
+              children: [
+                {
+                  type: 'TextBlock',
+                  text: 'Range:',
+                },
+              ],
+            },
+            {
+              type: 'Column',
+              children: [
+                {
+                  text: 'Range',
+                  type: 'RangeSelect',
+                  margin: '0 0 0 10px',
+                  title: 'RangeSelect',
+                  needEqualSign: false,
+                  absoluteReference: false,
+                  needSheetName: true,
+                  isOneRange: true,
+                  isSingleCell: false,
+                  bindingPath: 'range',
+                },
+              ],
+            },
+          ],
+        },
+      ],
+    }
+    const Sheets: any = GC.Spread.Sheets
+    Sheets.Designer.registerTemplate('getRange', dialogGetRangeTemplate)
+
     this.ribbonConfig = this.getRibbonConfig()
     this.fbx = null
   }
@@ -333,6 +372,31 @@ class App extends React.Component<{}, AppState> {
           >
             Resize Table: {(resizeMode === ResizeMode.Cells && 'Cells') || 'Rows'}
           </button> */}
+          <button
+            className="test-dialog"
+            onClick={() => {
+              const dialogOption = { range: '' }
+              const Sheets: any = GC.Spread.Sheets
+
+              Sheets.Designer.showDialog(
+                'getRange',
+                dialogOption,
+                (result: { range: string } | undefined) => {
+                  if (!result) {
+                    return
+                  }
+                  const { range } = result
+
+                  alert('you have enter the range ' + range)
+                  return true
+                },
+                (error: Error) => {
+                  console.error(error.message)
+                }
+              )
+            }}
+          >
+            Test dialog
           </button>
           {/* <button
                 className="add-table"
@@ -1106,7 +1170,7 @@ class App extends React.Component<{}, AppState> {
         title: 'Reset',
         text: 'Reset',
         iconClass: 'ribbon-button-clear-celltype',
-        bigButton: 'true',
+        // bigButton: 'true',
         commandName: 'resetIrionConfig',
         execute: async (context: any, propertyName: any, fontItalicChecked: any) => {
           this.irionConfig = []
@@ -1321,6 +1385,15 @@ class App extends React.Component<{}, AppState> {
         }
       }
     )
+
+    workBook.bind(GC.Spread.Sheets.Events.TableRowsChanged, function (sender: any, args: any) {
+      const { sheet, table, propertyName, row, count, isAfter, deletedItem } = args
+      if (deletedItem?.length > 0) {
+        // Deletion
+      } else {
+        // Addition of {count} rows
+      }
+    })
 
     workBook.bind(GC.Spread.Sheets.Events.CellChanged, (sender: any, args: GC.Spread.Sheets.ICellChangedEventArgs) => {
       const { oldValue, newValue, propertyName } = args
