@@ -1,6 +1,6 @@
 import * as React from 'react'
 import * as GC from '@grapecity/spread-sheets'
-import { SpreadSheets, Worksheet } from '@grapecity/spread-sheets-react'
+import { SpreadSheets } from '@grapecity/spread-sheets-react'
 
 import '@grapecity/spread-sheets-designer-resources-en'
 import { Designer } from '@grapecity/spread-sheets-designer-react'
@@ -84,6 +84,8 @@ const DATASOURCES = [POSTS_SOURCE, USERS_SOURCE, TODOS_SOURCE, COMMENTS_SOURCE]
 const WITH_BINDING = 'With Bindings'
 const WITHOUT_BINDING = 'Without Bindings'
 const EXPORT_MODE = [WITH_BINDING, WITHOUT_BINDING]
+const TABLE_SELECTED = 'TableSelected'
+const BUTTON_SELECTED = 'ButtonSelected'
 const START_PERFORMANCE_TEST = false
 const PERF_ROWS = 1000
 const PERF_COLS = 14
@@ -92,6 +94,7 @@ const INIT_EDIT_COMPUTEDCOL = { isOpen: false, tableName: '', computedColumn: nu
 
 class App extends React.Component<{}, AppState> {
   hostStyle: any
+  designerRef: any
   wb1: GC.Spread.Sheets.Workbook | undefined
   wb2: GC.Spread.Sheets.Workbook | undefined
   ribbonConfig: any
@@ -417,7 +420,10 @@ class App extends React.Component<{}, AppState> {
         <>
           <Designer
             styleInfo={{ width: '100%', height: '65vh' }}
-            designerInitialized={(designer: any) => this.initSpread1(designer.getWorkbook())}
+            designerInitialized={(designer: any) => {
+              this.designerRef = designer
+              this.initSpread1(designer.getWorkbook())
+            }}
             config={this.ribbonConfig}
           ></Designer>
 
@@ -445,6 +451,9 @@ class App extends React.Component<{}, AppState> {
   initSpread1(workBook: GC.Spread.Sheets.Workbook) {
     this.wb1 = workBook
     const sheet = workBook.getActiveSheet()
+
+    // Workbook scrollbars do not show void areas
+    this.wb1.options.scrollbarMaxAlign = true
 
     // Bind events
     this.bindEvents(this.wb1, sheet)
@@ -1033,6 +1042,40 @@ class App extends React.Component<{}, AppState> {
         title: 'Add New',
         type: 'dropdown',
       },
+      editBinding: {
+        title: 'Edit',
+        text: 'Edit',
+        iconClass: 'ribbon-button-sheetgeneral',
+        bigButton: 'true',
+        commandName: 'editBinding',
+        enableContext: TABLE_SELECTED,
+        execute: async (context: any, propertyName: any, fontItalicChecked: any) => {
+          const activeSheet: GC.Spread.Sheets.Worksheet = context.Spread.getActiveSheet()
+          const row = activeSheet.getActiveRowIndex()
+          const col = activeSheet.getActiveColumnIndex()
+
+          const table = activeSheet.tables.find(row, col)
+          const isTable = table != null
+          //oltre questo controllo, andrebbe poi successivamente fatto un check sul fatto che sia una tabella con binding
+          if (isTable) {
+            // Open modal and edit data
+            this.showModal()
+          } else {
+            console.warn('La cella selezionata non appartiene ad una tabella!')
+          }
+        },
+      },
+      showBindings: {
+        title: 'Show all',
+        text: 'Show all',
+        iconClass: 'ribbon-button-celltype',
+        bigButton: 'true',
+        commandName: 'showBindings',
+        execute: async (context: any, propertyName: any, fontItalicChecked: any) => {
+          //finestra con elenco tabelle inserite bindate
+          this.showModal()
+        },
+      },
       listExport: {
         bigButton: true,
         commandName: 'listExport',
@@ -1050,6 +1093,7 @@ class App extends React.Component<{}, AppState> {
         bigButton: true,
         commandName: 'configCommand',
         useButtonStyle: true,
+        enableContext: BUTTON_SELECTED,
         execute: async (context: any, propertyName: any, fontItalicChecked: any) => {
           const activeSheet = context.Spread.getActiveSheet()
           const row = activeSheet.getActiveRowIndex()
@@ -1081,45 +1125,13 @@ class App extends React.Component<{}, AppState> {
           }
         },
       },
-      editBinding: {
-        title: 'Edit',
-        text: 'Edit',
-        iconClass: 'ribbon-button-sheetgeneral',
-        bigButton: 'true',
-        commandName: 'editBinding',
-        execute: async (context: any, propertyName: any, fontItalicChecked: any) => {
-          const activeSheet: GC.Spread.Sheets.Worksheet = context.Spread.getActiveSheet()
-          const row = activeSheet.getActiveRowIndex()
-          const col = activeSheet.getActiveColumnIndex()
-
-          const table = activeSheet.tables.find(row, col)
-          const isTable = table != null
-          //oltre questo controllo, andrebbe poi successivamente fatto un check sul fatto che sia una tabella con binding
-          if (isTable) {
-            // Open modal and edit data
-            this.showModal()
-          } else {
-            console.warn('La cella selezionata non appartiene ad una tabella!')
-          }
-        },
-      },
-      showBindings: {
-        title: 'Show all',
-        text: 'Show all',
-        iconClass: 'ribbon-button-celltype',
-        bigButton: 'true',
-        commandName: 'showBindings',
-        execute: async (context: any, propertyName: any, fontItalicChecked: any) => {
-          //finestra con elenco tabelle inserite bindate
-          this.showModal()
-        },
-      },
       addCompColumn: {
         title: 'Add',
         text: 'Add',
         iconClass: 'ribbon-button-table',
         bigButton: 'true',
         commandName: 'addCompColumn',
+        enableContext: TABLE_SELECTED,
         execute: async (context: any, propertyName: any, fontItalicChecked: any) => {
           const activeSheet: GC.Spread.Sheets.Worksheet = context.Spread.getActiveSheet()
 
@@ -1135,6 +1147,7 @@ class App extends React.Component<{}, AppState> {
         iconClass: 'ribbon-button-sheetgeneral',
         bigButton: 'true',
         commandName: 'editCompColumn',
+        enableContext: TABLE_SELECTED,
         execute: async (context: any, propertyName: any, fontItalicChecked: any) => {
           const activeSheet: GC.Spread.Sheets.Worksheet = context.Spread.getActiveSheet()
           const col = activeSheet.getActiveColumnIndex()
@@ -1406,17 +1419,16 @@ class App extends React.Component<{}, AppState> {
     })
 
     sheet.bind(
-      GC.Spread.Sheets.Events.TableRowsChanged,
-      function (
-        sheet: Worksheet,
-        table: string,
-        propertyName: string,
-        row: number,
-        count: number,
-        isAfter: boolean,
-        deletedItem: undefined
-      ) {
-        console.log('TableRowsChanged')
+      GC.Spread.Sheets.Events.SelectionChanged,
+      (sender: any, args: GC.Spread.Sheets.ISelectionChangedEventArgs) => {
+        const { sheet } = args
+
+        const cellType = sheet.getCell(sheet.getActiveRowIndex(), sheet.getActiveColumnIndex()).cellType()
+        const isButton = cellType instanceof GC.Spread.Sheets.CellTypes.Button
+        const isTable = sheet.tables.find(sheet.getActiveRowIndex(), sheet.getActiveColumnIndex()) != null
+
+        this.designerRef.setData(BUTTON_SELECTED, isButton)
+        this.designerRef.setData(TABLE_SELECTED, isTable)
       }
     )
 
