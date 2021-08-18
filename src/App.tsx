@@ -17,6 +17,7 @@ import AddComputedColumnModal, { AddComputedColumn } from './AddComputedColumnMo
 import { addMoreRoom, getBoundedTable, getIrionConfigIndex } from './utils'
 import { schema } from './schema'
 import { getOrders } from './orders'
+import { dialogGetRangeTemplate } from './getRangeTemplate'
 
 // GC.Spread.Sheets.LicenseKey =
 //   'GrapeCity-Internal-Use-Only,362369852286222#B0vRARPV5NrR6LUhmN8YGe4k5LhlkbhJWaZVkSmBjellXUF5URz46a4N6RhhDNadjW7c6d4VES7MURnlHVXd5V7gnVwA7YxIkeYNXMwxGdqVzUlhVMzIUWxdXTwgTUJZlNvImdBJ4SW5GTExEezhVOOxWb7R7VKF7TaFnWYJ4L6c7NoN4RRNGSXVEaKJDTFVTYCNmMKNlUZNFMjNzSxgHRwhTMwQ4QsRVWlFTMjFmdUZjYyUXZRR6bXV6RBt6NDBHV8Z5drdWZtRUbCJHeZRFO8F6R5AzM4ljSXNjQ9gTMqBHah5UTKZWT6h6YihXU8Q6V7ckI0IyUiwiIyUUNzAjQwcjI0ICSiwCN9EzM9kjM4YTM0IicfJye#4Xfd5nIFVUSWJiOiMkIsICNx8idgAyUKBCZhVmcwNlI0IiTis7W0ICZyBlIsISM4ETNyADIxAjMxAjMwIjI0ICdyNkIsIybp9ie4lGbit6YhR7cuoCLt36YukHdpNWZwFmcn9iKiojIz5GRiwiI9RXaDVGchJ7RiojIh94QiwiIyIjM6gjMyUDO9YzMyYzMiojIklkIs4XZzxWYmpjIyNHZisnOiwmbBJye0ICRiwiI34TQQFUM6NlUvFjQ6J5dRJzbk3Ca4U6N8c5MxNmQ5JFRW3EWJxEayhFZ4FncPJndZRUahRzcFdnZGZUOpRGeSRVWiplUy8EWh9kV8gjTip5bNpkSSFGWvcVMYVTURlHcHVXMwJjU' as any
@@ -86,6 +87,7 @@ const WITHOUT_BINDING = 'Without Bindings'
 const EXPORT_MODE = [WITH_BINDING, WITHOUT_BINDING]
 const TABLE_SELECTED = 'TableSelected'
 const BUTTON_SELECTED = 'ButtonSelected'
+const DIALOG_GET_RANGE = 'GetRange'
 const START_PERFORMANCE_TEST = false
 const PERF_ROWS = 1000
 const PERF_COLS = 14
@@ -118,44 +120,8 @@ class App extends React.Component<{}, AppState> {
       commandConfig: null,
     }
 
-    const dialogGetRangeTemplate = {
-      title: 'demo',
-      content: [
-        {
-          type: 'ColumnSet',
-          children: [
-            {
-              type: 'Column',
-              children: [
-                {
-                  type: 'TextBlock',
-                  text: 'Range:',
-                },
-              ],
-            },
-            {
-              type: 'Column',
-              children: [
-                {
-                  text: 'Range',
-                  type: 'RangeSelect',
-                  margin: '0 0 0 10px',
-                  title: 'RangeSelect',
-                  needEqualSign: false,
-                  absoluteReference: false,
-                  needSheetName: true,
-                  isOneRange: true,
-                  isSingleCell: false,
-                  bindingPath: 'range',
-                },
-              ],
-            },
-          ],
-        },
-      ],
-    }
     const Sheets: any = GC.Spread.Sheets
-    Sheets.Designer.registerTemplate('getRange', dialogGetRangeTemplate)
+    Sheets.Designer.registerTemplate(DIALOG_GET_RANGE, dialogGetRangeTemplate)
 
     this.ribbonConfig = this.getRibbonConfig()
     this.fbx = null
@@ -382,15 +348,13 @@ class App extends React.Component<{}, AppState> {
               const Sheets: any = GC.Spread.Sheets
 
               Sheets.Designer.showDialog(
-                'getRange',
+                DIALOG_GET_RANGE,
                 dialogOption,
                 (result: { range: string } | undefined) => {
                   if (!result) {
                     return
                   }
-                  const { range } = result
-
-                  alert('you have enter the range ' + range)
+                  alert('Range: ' + result.range)
                   return true
                 },
                 (error: Error) => {
@@ -399,7 +363,7 @@ class App extends React.Component<{}, AppState> {
               )
             }}
           >
-            Test dialog
+            Test Range Dialog
           </button>
           {/* <button
                 className="add-table"
