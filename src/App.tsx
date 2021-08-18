@@ -264,7 +264,7 @@ class App extends React.Component<{}, AppState> {
 
                       if (computedCol) {
                         this.updateComputedColumns(tableName, activeSheet.name(), Actions.Delete, computedColumn)
-
+                        // Reload data
                         this.fetchData(dataSource).then((json) => {
                           this.setTable(json, dataSource, row, col, tableName, activeSheet)
                         })
@@ -315,7 +315,7 @@ class App extends React.Component<{}, AppState> {
 
                     if (tableConfig) {
                       const { dataSource, row, col, tableName } = tableConfig
-
+                      // Reload data
                       this.fetchData(dataSource).then((json) => {
                         this.setTable(json, dataSource, row, col, tableName, activeSheet)
                       })
@@ -341,7 +341,7 @@ class App extends React.Component<{}, AppState> {
           >
             Resize Table: {(resizeMode === ResizeMode.Cells && 'Cells') || 'Rows'}
           </button> */}
-          <button
+          {/* <button
             className="test-dialog"
             onClick={() => {
               const dialogOption = { range: '' }
@@ -364,7 +364,7 @@ class App extends React.Component<{}, AppState> {
             }}
           >
             Test Range Dialog
-          </button>
+          </button> */}
           {/* <button
                 className="add-table"
                 onClick={() => {
