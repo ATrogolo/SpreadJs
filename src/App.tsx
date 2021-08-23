@@ -141,6 +141,17 @@ class App extends React.Component<{}, AppState> {
     a.textContent = this.fbx.text()
   }
 
+  // componentDidMount() {
+  //   const formulaHTMLRef = document.getElementById('formulaBar')
+  //   if (formulaHTMLRef) {
+  //     const fbx = new GC.Spread.Sheets.FormulaTextBox.FormulaTextBox(formulaHTMLRef, {
+  //       rangeSelectMode: false,
+  //       absoluteReference: true,
+  //     })
+  //     fbx.workbook(this.wb1)
+  //   }
+  // }
+
   render() {
     const { isAddComputedColumnOpen, isCommandConfigOpen, editComputedColumn, resizeMode, commandConfig } = this.state
 
@@ -332,6 +343,7 @@ class App extends React.Component<{}, AppState> {
           <button className="export-config" onClick={this.exportToWB2}>
             Export WB1 to WB2
           </button>
+          {/* <div id="formulaBar" contentEditable="true" spellCheck="false"></div> */}
           {/* <button
             className="resize-mode"
             onClick={() => {
