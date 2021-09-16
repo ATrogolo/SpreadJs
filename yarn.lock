@@ -1300,95 +1300,95 @@
     strip-json-comments "^3.1.1"
 
 "@grapecity/spread-excelio@^14.1.4":
-  version "14.1.5"
-  resolved "http://telemaco/EDM Platform/_packaging/NpmRepository/npm/registry/@grapecity/spread-excelio/-/spread-excelio-14.1.5.tgz#ffe329128ed3ddf2e0141e40bf19c341b2527723"
-  integrity sha1-/+MpEo7T3fLgFB5AvxnDQbJSdyM=
+  version "14.1.6"
+  resolved "http://telemaco/EDM Platform/_packaging/NpmRepository/npm/registry/@grapecity/spread-excelio/-/spread-excelio-14.1.6.tgz#443051c5a497ce0e0fa314d4dfbefbf7b6879587"
+  integrity sha1-RDBRxaSXzg4PoxTU377797aHlYc=
   dependencies:
-    "@grapecity/spread-sheets" "14.1.5"
+    "@grapecity/spread-sheets" "14.1.6"
 
 "@grapecity/spread-sheets-barcode@^14.1.4":
-  version "14.1.5"
-  resolved "http://telemaco/EDM Platform/_packaging/NpmRepository/npm/registry/@grapecity/spread-sheets-barcode/-/spread-sheets-barcode-14.1.5.tgz#59135c2c7401449d455a57213d277bc6cdfa07a0"
-  integrity sha1-WRNcLHQBRJ1FWlchPSd7xs36B6A=
+  version "14.1.6"
+  resolved "http://telemaco/EDM Platform/_packaging/NpmRepository/npm/registry/@grapecity/spread-sheets-barcode/-/spread-sheets-barcode-14.1.6.tgz#13465bfeed54b677bf4b4b59a17a3acff50851bf"
+  integrity sha1-E0Zb/u1Utne/S0tZoXo6z/UIUb8=
   dependencies:
-    "@grapecity/spread-sheets" "14.1.5"
+    "@grapecity/spread-sheets" "14.1.6"
 
 "@grapecity/spread-sheets-charts@^14.1.4":
-  version "14.1.5"
-  resolved "http://telemaco/EDM Platform/_packaging/NpmRepository/npm/registry/@grapecity/spread-sheets-charts/-/spread-sheets-charts-14.1.5.tgz#9e9849840c2c8c4ddaad0b43e1617d3ea4c9ece2"
-  integrity sha1-nphJhAwsjE3arQtD4WF9PqTJ7OI=
+  version "14.1.6"
+  resolved "http://telemaco/EDM Platform/_packaging/NpmRepository/npm/registry/@grapecity/spread-sheets-charts/-/spread-sheets-charts-14.1.6.tgz#343a6329c4dd7f4d704e0fd2a08a60565e5cf999"
+  integrity sha1-NDpjKcTdf01wTg/SoIpgVl5c+Zk=
   dependencies:
-    "@grapecity/spread-sheets" "14.1.5"
+    "@grapecity/spread-sheets" "14.1.6"
 
 "@grapecity/spread-sheets-designer-react@^14.1.4":
-  version "14.1.5"
-  resolved "http://telemaco/EDM Platform/_packaging/NpmRepository/npm/registry/@grapecity/spread-sheets-designer-react/-/spread-sheets-designer-react-14.1.5.tgz#1510947347bdb5bc29d50528d75ea5a970fb1b40"
-  integrity sha1-FRCUc0e9tbwp1QUo116lqXD7G0A=
+  version "14.1.6"
+  resolved "http://telemaco/EDM Platform/_packaging/NpmRepository/npm/registry/@grapecity/spread-sheets-designer-react/-/spread-sheets-designer-react-14.1.6.tgz#006dff4f801123fc9a7f7d33daab180145094ebc"
+  integrity sha1-AG3/T4ARI/yaf30z2qsYAUUJTrw=
 
 "@grapecity/spread-sheets-designer-resources-en@^14.1.4":
-  version "14.1.5"
-  resolved "http://telemaco/EDM Platform/_packaging/NpmRepository/npm/registry/@grapecity/spread-sheets-designer-resources-en/-/spread-sheets-designer-resources-en-14.1.5.tgz#c960bcbf28104ea46eda3d5562868799a5b7f7e5"
-  integrity sha1-yWC8vygQTqRu2j1VYoaHmaW39+U=
+  version "14.1.6"
+  resolved "http://telemaco/EDM Platform/_packaging/NpmRepository/npm/registry/@grapecity/spread-sheets-designer-resources-en/-/spread-sheets-designer-resources-en-14.1.6.tgz#ed5c85fa8727043579bd28eb32a64ee28659190c"
+  integrity sha1-7VyF+ocnBDV5vSjrMqZO4oZZGQw=
 
 "@grapecity/spread-sheets-designer@^14.1.4":
-  version "14.1.5"
-  resolved "http://telemaco/EDM Platform/_packaging/NpmRepository/npm/registry/@grapecity/spread-sheets-designer/-/spread-sheets-designer-14.1.5.tgz#0a263d95af9dadff73d05a65b5458245ac012e55"
-  integrity sha1-CiY9la+drf9z0FpltUWCRawBLlU=
+  version "14.1.6"
+  resolved "http://telemaco/EDM Platform/_packaging/NpmRepository/npm/registry/@grapecity/spread-sheets-designer/-/spread-sheets-designer-14.1.6.tgz#bf6f3c0ee2928e61507edc4c2c44a412fe62e649"
+  integrity sha1-v288DuKSjmFQftxMLESkEv5i5kk=
 
 "@grapecity/spread-sheets-languagepackages@^14.1.4":
-  version "14.1.5"
-  resolved "http://telemaco/EDM Platform/_packaging/NpmRepository/npm/registry/@grapecity/spread-sheets-languagepackages/-/spread-sheets-languagepackages-14.1.5.tgz#f2f4a162804fa0fa8a041b766ce07a6412255ce7"
-  integrity sha1-8vShYoBPoPqKBBt2bOB6ZBIlXOc=
+  version "14.1.6"
+  resolved "http://telemaco/EDM Platform/_packaging/NpmRepository/npm/registry/@grapecity/spread-sheets-languagepackages/-/spread-sheets-languagepackages-14.1.6.tgz#4d3ef3aff7cf20e42212c350aebc1060e29c71f1"
+  integrity sha1-TT7zr/fPIOQiEsNQrrwQYOKccfE=
   dependencies:
-    "@grapecity/spread-sheets" "14.1.5"
+    "@grapecity/spread-sheets" "14.1.6"
 
 "@grapecity/spread-sheets-pdf@^14.1.4":
-  version "14.1.5"
-  resolved "http://telemaco/EDM Platform/_packaging/NpmRepository/npm/registry/@grapecity/spread-sheets-pdf/-/spread-sheets-pdf-14.1.5.tgz#9ee18d6a30c1ef84c5f5c566017678d1115e1374"
-  integrity sha1-nuGNajDB74TF9cVmAXZ40RFeE3Q=
+  version "14.1.6"
+  resolved "http://telemaco/EDM Platform/_packaging/NpmRepository/npm/registry/@grapecity/spread-sheets-pdf/-/spread-sheets-pdf-14.1.6.tgz#002bf98f52dcf45e1b564155a17f5ed2d6d33555"
+  integrity sha1-ACv5j1Lc9F4bVkFVoX9e0tbTNVU=
   dependencies:
-    "@grapecity/spread-sheets" "14.1.5"
-    "@grapecity/spread-sheets-print" "14.1.5"
+    "@grapecity/spread-sheets" "14.1.6"
+    "@grapecity/spread-sheets-print" "14.1.6"
 
 "@grapecity/spread-sheets-pivot-addon@^14.1.4":
-  version "14.1.5"
-  resolved "http://telemaco/EDM Platform/_packaging/NpmRepository/npm/registry/@grapecity/spread-sheets-pivot-addon/-/spread-sheets-pivot-addon-14.1.5.tgz#54e7fa1f622f98ad4b38bfcd5d1348b119ecbd17"
-  integrity sha1-VOf6H2IvmK1LOL/NXRNIsRnsvRc=
+  version "14.1.6"
+  resolved "http://telemaco/EDM Platform/_packaging/NpmRepository/npm/registry/@grapecity/spread-sheets-pivot-addon/-/spread-sheets-pivot-addon-14.1.6.tgz#a5f3ea48f9e0d938f293695233df45923fb44c92"
+  integrity sha1-pfPqSPng2Tjyk2lSM99Fkj+0TJI=
   dependencies:
-    "@grapecity/spread-sheets" "14.1.5"
+    "@grapecity/spread-sheets" "14.1.6"
 
-"@grapecity/spread-sheets-print@14.1.5", "@grapecity/spread-sheets-print@^14.1.4":
-  version "14.1.5"
-  resolved "http://telemaco/EDM Platform/_packaging/NpmRepository/npm/registry/@grapecity/spread-sheets-print/-/spread-sheets-print-14.1.5.tgz#b37b4d47f90753462f6b8b867e2410ddd2fda32e"
-  integrity sha1-s3tNR/kHU0Yva4uGfiQQ3dL9oy4=
+"@grapecity/spread-sheets-print@14.1.6", "@grapecity/spread-sheets-print@^14.1.4":
+  version "14.1.6"
+  resolved "http://telemaco/EDM Platform/_packaging/NpmRepository/npm/registry/@grapecity/spread-sheets-print/-/spread-sheets-print-14.1.6.tgz#09cd570c2664e87c79ba56f5052a951f81c54f68"
+  integrity sha1-Cc1XDCZk6Hx5ulb1BSqVH4HFT2g=
   dependencies:
-    "@grapecity/spread-sheets" "14.1.5"
+    "@grapecity/spread-sheets" "14.1.6"
 
 "@grapecity/spread-sheets-react@^14.1.4":
-  version "14.1.5"
-  resolved "http://telemaco/EDM Platform/_packaging/NpmRepository/npm/registry/@grapecity/spread-sheets-react/-/spread-sheets-react-14.1.5.tgz#eaaa0a1c507fa58dc2edf7222a6455f6cdf6c660"
-  integrity sha1-6qoKHFB/pY3C7fciKmRV9s32xmA=
+  version "14.1.6"
+  resolved "http://telemaco/EDM Platform/_packaging/NpmRepository/npm/registry/@grapecity/spread-sheets-react/-/spread-sheets-react-14.1.6.tgz#a45dea96ad81d8334f2485f1f4749c42aab26a00"
+  integrity sha1-pF3qlq2B2DNPJIXx9HScQqqyagA=
   dependencies:
-    "@grapecity/spread-sheets" "14.1.5"
+    "@grapecity/spread-sheets" "14.1.6"
 
 "@grapecity/spread-sheets-resources-ja@^14.1.4":
-  version "14.1.5"
-  resolved "http://telemaco/EDM Platform/_packaging/NpmRepository/npm/registry/@grapecity/spread-sheets-resources-ja/-/spread-sheets-resources-ja-14.1.5.tgz#9f06881a02cccfd9006897817f33d84e53f29e25"
-  integrity sha1-nwaIGgLMz9kAaJeBfzPYTlPyniU=
+  version "14.1.6"
+  resolved "http://telemaco/EDM Platform/_packaging/NpmRepository/npm/registry/@grapecity/spread-sheets-resources-ja/-/spread-sheets-resources-ja-14.1.6.tgz#1eaa9a9663b8ed77f18c8e94d08b821a73634222"
+  integrity sha1-HqqalmO47XfxjI6U0IuCGnNjQiI=
   dependencies:
-    "@grapecity/spread-sheets" "14.1.5"
+    "@grapecity/spread-sheets" "14.1.6"
 
 "@grapecity/spread-sheets-shapes@^14.1.4":
-  version "14.1.5"
-  resolved "http://telemaco/EDM Platform/_packaging/NpmRepository/npm/registry/@grapecity/spread-sheets-shapes/-/spread-sheets-shapes-14.1.5.tgz#0cefd828171fe048d4b5c2f34bf93c587f57bd7c"
-  integrity sha1-DO/YKBcf4EjUtcLzS/k8WH9XvXw=
+  version "14.1.6"
+  resolved "http://telemaco/EDM Platform/_packaging/NpmRepository/npm/registry/@grapecity/spread-sheets-shapes/-/spread-sheets-shapes-14.1.6.tgz#e293f88734b33677bcabb46569221f72cde22cf3"
+  integrity sha1-4pP4hzSzNne8q7RlaSIfcs3iLPM=
   dependencies:
-    "@grapecity/spread-sheets" "14.1.5"
+    "@grapecity/spread-sheets" "14.1.6"
 
-"@grapecity/spread-sheets@14.1.5", "@grapecity/spread-sheets@^14.1.4":
-  version "14.1.5"
-  resolved "http://telemaco/EDM Platform/_packaging/NpmRepository/npm/registry/@grapecity/spread-sheets/-/spread-sheets-14.1.5.tgz#eba704aacebb640c195dc0a3d40e7d3b7d7e81f2"
-  integrity sha1-66cEqs67ZAwZXcCj1A59O31+gfI=
+"@grapecity/spread-sheets@14.1.6", "@grapecity/spread-sheets@^14.1.4":
+  version "14.1.6"
+  resolved "http://telemaco/EDM Platform/_packaging/NpmRepository/npm/registry/@grapecity/spread-sheets/-/spread-sheets-14.1.6.tgz#3dd36ef0beb71a21df5fa65f836d72e0cf197457"
+  integrity sha1-PdNu8L63GiHfX6Zfg21y4M8ZdFc=
 
 "@hapi/address@2.x.x":
   version "2.1.4"
