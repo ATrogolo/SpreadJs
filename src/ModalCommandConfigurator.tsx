@@ -10,7 +10,7 @@ interface ModalCommandConfiguratorProps {
   schema: any
   commandConfig: CommandConfig | null
   toggleCommandConfigModal: (isOpen: boolean) => void
-  setCommand: (action: Actions, command: Command) => void
+  setCommand: (action: Actions, command: CommandConfig) => void
 }
 
 export interface Parameter {
@@ -19,13 +19,8 @@ export interface Parameter {
   value: string | null
 }
 
-export interface Command {
-  name: string | null
-  parameters: Parameter[]
-}
-
 interface ModalCommandConfiguratorState {
-  command: Command
+  command: CommandConfig
 }
 
 interface Action {
@@ -33,7 +28,7 @@ interface Action {
   label: string
 }
 
-const INIT_COMMAND: Command = {
+const INIT_COMMAND: CommandConfig = {
   name: null,
   parameters: [],
 }
@@ -47,6 +42,15 @@ export class ModalCommandConfigurator extends React.Component<
 
     this.state = {
       command: INIT_COMMAND,
+    }
+  }
+
+  static getDerivedStateFromProps(
+    props: ModalCommandConfiguratorProps,
+    state: ModalCommandConfiguratorState
+  ): ModalCommandConfiguratorState | undefined {
+    if (props.commandConfig != null && state.command === INIT_COMMAND) {
+      return { command: props.commandConfig }
     }
   }
 
@@ -80,7 +84,7 @@ export class ModalCommandConfigurator extends React.Component<
   selectCommand = (command: any) => {
     const { value } = command
 
-    this.setState({ command: { ...this.state.command, name: value } })
+    this.setState({ command: { ...this.state.command, name: value, parameters: [] } })
   }
 
   setParameter = (id: number, name: string | null, value: string | null) => {
@@ -127,6 +131,7 @@ export class ModalCommandConfigurator extends React.Component<
   render() {
     const { isOpen, schema } = this.props
     const { command } = this.state
+    const { name: commandName } = command
 
     const commandsList: Action[] = schema.actions.map((action: any) => ({
       value: action.name,
@@ -134,12 +139,15 @@ export class ModalCommandConfigurator extends React.Component<
     }))
 
     let commandParameters: Action[] = []
-    if (command.name != null) {
-      const currentSelectedCommand = schema.actions.find((action: any) => action.name === command.name)
+    let selectedCommand = null
+    if (commandName != null) {
+      const currentSelectedCommand = schema.actions.find((action: any) => action.name === commandName)
       commandParameters = currentSelectedCommand.parameters.map((parameter: any) => ({
         value: parameter.name,
         label: parameter.name,
       }))
+
+      selectedCommand = { value: commandName, label: commandName }
     }
 
     return isOpen ? (
@@ -160,7 +168,7 @@ export class ModalCommandConfigurator extends React.Component<
             <div className="labelSelect">
               <div>Command:</div>
               <div className="selectSize">
-                <Select options={commandsList} onChange={this.selectCommand} />
+                <Select options={commandsList} onChange={this.selectCommand} value={selectedCommand} />
               </div>
             </div>
 
@@ -172,7 +180,8 @@ export class ModalCommandConfigurator extends React.Component<
               {/* Insert command parameters */}
               {command.parameters.length !== 0 &&
                 command.parameters.map((parameter: Parameter) => {
-                  const { id, value } = parameter
+                  const { id, value, name } = parameter
+                  const valueItem = name ? { value: name, label: name } : null
 
                   return (
                     <div className="parameter-wrapper" key={id}>
@@ -180,6 +189,7 @@ export class ModalCommandConfigurator extends React.Component<
                         className="parameters-list"
                         options={commandParameters}
                         onChange={(option) => option && this.setParameter(id, option.value, null)}
+                        value={valueItem}
                       />
 
                       <input

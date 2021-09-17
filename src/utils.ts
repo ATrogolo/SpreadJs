@@ -1,7 +1,7 @@
 import * as GC from '@grapecity/spread-sheets'
-import { IrionConfig } from './App'
+import { TableConfig } from './App'
 
-export const getBoundedTable = (activeSheet: GC.Spread.Sheets.Worksheet, irionConfig: IrionConfig[]) => {
+export const getBoundedTable = (activeSheet: GC.Spread.Sheets.Worksheet, irionConfig: TableConfig[]) => {
   const row = activeSheet.getActiveRowIndex()
   const col = activeSheet.getActiveColumnIndex()
 
@@ -46,7 +46,7 @@ export const addMoreRoom = (
   }
 }
 
-export const getIrionConfigIndex = (irionConfig: IrionConfig[], sheet: string, tableName: string) => {
+export const getIrionConfigIndex = (irionConfig: TableConfig[], sheet: string, tableName: string) => {
   const configIndex = irionConfig.findIndex(
     (item) => item.sheet === sheet && item.tableName === tableName // && item.row === row && item.col === col
   )

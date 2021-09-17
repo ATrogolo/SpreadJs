@@ -9,7 +9,7 @@ import '@grapecity/spread-sheets/styles/gc.spread.sheets.excel2013white.css'
 
 import './App.css'
 import { Modal } from './Modal'
-import { Command, ModalCommandConfigurator, Parameter } from './ModalCommandConfigurator'
+import { ModalCommandConfigurator, Parameter } from './ModalCommandConfigurator'
 import Dialog from '@material-ui/core/Dialog'
 import { DraggableComponent } from './DraggableComponent'
 
@@ -34,12 +34,17 @@ interface AppState {
   isAddComputedColumnOpen: boolean
   isCommandConfigOpen: boolean
   editComputedColumn: { isOpen: boolean; tableName: string; computedColumn: ComputedColumn | null }
-  tableConfig: IrionConfig | null
+  tableConfig: TableConfig | null
   resizeMode: ResizeMode
   commandConfig: CommandConfig | null
 }
 
 export interface IrionConfig {
+  tables: TableConfig[]
+  commands: CommandConfig[]
+}
+
+export interface TableConfig {
   tableName: string
   row: number
   col: number
@@ -49,8 +54,8 @@ export interface IrionConfig {
 }
 
 export interface CommandConfig {
-  id: number
-  name: string
+  id?: number
+  name: string | null
   parameters: Parameter[]
 }
 
@@ -69,7 +74,7 @@ export enum Actions {
 
 interface Config {
   spreadJs: { [key: string]: any }
-  irionConfig: IrionConfig[]
+  irionConfig: IrionConfig
 }
 
 type ICellRangeExtended = GC.Spread.Sheets.CellRange & { id: number }
@@ -98,7 +103,7 @@ class App extends React.Component<{}, AppState> {
   wb1: GC.Spread.Sheets.Workbook | undefined
   wb2: GC.Spread.Sheets.Workbook | undefined
   ribbonConfig: any
-  irionConfig: IrionConfig[] = []
+  irionConfig: IrionConfig = { tables: [], commands: [] }
   fbx: any
 
   constructor(props: {}) {
@@ -262,7 +267,7 @@ class App extends React.Component<{}, AppState> {
                       return
                     }
 
-                    const tableConfig = this.irionConfig.find((config) => config.tableName === tableName)
+                    const tableConfig = this.irionConfig.tables.find((table) => table.tableName === tableName)
 
                     if (tableConfig) {
                       const { dataSource, row, col, tableName } = tableConfig
@@ -318,8 +323,8 @@ class App extends React.Component<{}, AppState> {
                       computedColumn
                     )
 
-                    const tableConfig = this.irionConfig.find(
-                      (config) => config.tableName === updatedComputedColumn.tableName
+                    const tableConfig = this.irionConfig.tables.find(
+                      (table) => table.tableName === updatedComputedColumn.tableName
                     )
 
                     if (tableConfig) {
@@ -509,7 +514,7 @@ class App extends React.Component<{}, AppState> {
     const serializationOption = {}
     const json = workbook?.toJSON(serializationOption)
 
-    const exportConfig: Config = { spreadJs: { ...json }, irionConfig: [] }
+    const exportConfig: Config = { spreadJs: { ...json }, irionConfig: { tables: [], commands: [] } }
     console.log('json', exportConfig)
   }
 
@@ -526,7 +531,7 @@ class App extends React.Component<{}, AppState> {
 
     // WB1 configuration stringified
     const json = workbook?.toJSON(serializationOption)
-    const irionConfig = withBindings ? [...this.irionConfig] : []
+    const irionConfig: IrionConfig = withBindings ? { ...this.irionConfig } : { tables: [], commands: [] }
 
     const exportConfig: Config = { spreadJs: { ...json }, irionConfig: irionConfig }
     console.log('json', exportConfig)
@@ -561,7 +566,7 @@ class App extends React.Component<{}, AppState> {
 
     setTimeout(() => {
       const promises: Promise<any>[] = []
-      this.irionConfig.forEach((tableConfig) => {
+      this.irionConfig.tables.forEach((tableConfig) => {
         const { dataSource } = tableConfig
 
         promises.push(this.fetchData(dataSource))
@@ -570,7 +575,7 @@ class App extends React.Component<{}, AppState> {
       Promise.all(promises).then((results: any[]) => {
         // Insert (import) table
         results.forEach((json: any[], index) => {
-          const { sheet: sheetName, row, col, dataSource, tableName } = this.irionConfig[index]
+          const { sheet: sheetName, row, col, dataSource, tableName } = this.irionConfig.tables[index]
 
           const sheet: GC.Spread.Sheets.Worksheet =
             this.wb2?.getSheetFromName(sheetName) ??
@@ -615,7 +620,7 @@ class App extends React.Component<{}, AppState> {
         try {
           table = sheet.tables.add(tableName, row, col, rowNumber, columnNumber)
           console.log('Inserting table ', tableName)
-        } catch (error) {
+        } catch (error: any) {
           const { message } = error
           this.wb1?.resumePaint()
           this.wb2?.resumePaint()
@@ -662,7 +667,7 @@ class App extends React.Component<{}, AppState> {
       } finally {
         if (throwsError === false) {
           // Add computed columns
-          const tableConfig = this.irionConfig.find((config) => {
+          const tableConfig = this.irionConfig.tables.find((config) => {
             return config.tableName === tableName
           })
 
@@ -713,9 +718,9 @@ class App extends React.Component<{}, AppState> {
 
     // Add columns
     let colsToAdd = 0
-    const configIndex = getIrionConfigIndex(this.irionConfig, sheet.name(), table.name())
+    const configIndex = getIrionConfigIndex(this.irionConfig.tables, sheet.name(), table.name())
     if (configIndex > -1) {
-      const computedColumnsNumber = this.irionConfig[configIndex].computedColumns.length
+      const computedColumnsNumber = this.irionConfig.tables[configIndex].computedColumns.length
 
       const lastColIndex = col + colCount
       colsToAdd = columnNumber - (colCount - computedColumnsNumber)
@@ -732,9 +737,9 @@ class App extends React.Component<{}, AppState> {
   }
 
   updateIrionConfig = (tableName: string, row: number, col: number, sheet: string, dataSource: string) => {
-    const configIndex = getIrionConfigIndex(this.irionConfig, sheet, tableName)
+    const configIndex = getIrionConfigIndex(this.irionConfig.tables, sheet, tableName)
 
-    const tableConfig: IrionConfig = {
+    const tableConfig: TableConfig = {
       tableName,
       row,
       col,
@@ -744,33 +749,33 @@ class App extends React.Component<{}, AppState> {
     }
 
     if (configIndex !== -1) {
-      this.irionConfig[configIndex] = tableConfig
+      this.irionConfig.tables[configIndex] = tableConfig
     } else {
-      this.irionConfig.push(tableConfig)
+      this.irionConfig.tables.push(tableConfig)
     }
   }
 
   updateComputedColumns = (tableName: string, sheet: string, action: Actions, computedColumn: ComputedColumn) => {
-    const configIndex = getIrionConfigIndex(this.irionConfig, sheet, tableName)
+    const configIndex = getIrionConfigIndex(this.irionConfig.tables, sheet, tableName)
     if (configIndex === -1) {
       return
     }
 
-    const { computedColumns } = this.irionConfig[configIndex]
+    const { computedColumns } = this.irionConfig.tables[configIndex]
     const computedColIndex = computedColumns.findIndex((computedCol) => computedCol.id === computedColumn.id)
 
     switch (action) {
       case Actions.Add:
-        this.irionConfig[configIndex].computedColumns = [...computedColumns, computedColumn]
+        this.irionConfig.tables[configIndex].computedColumns = [...computedColumns, computedColumn]
         break
       case Actions.Update:
         if (computedColIndex > -1) {
-          this.irionConfig[configIndex].computedColumns.splice(computedColIndex, 1, computedColumn)
+          this.irionConfig.tables[configIndex].computedColumns.splice(computedColIndex, 1, computedColumn)
         }
         break
       case Actions.Delete:
         if (computedColIndex > -1) {
-          this.irionConfig[configIndex].computedColumns.splice(computedColIndex, 1)
+          this.irionConfig.tables[configIndex].computedColumns.splice(computedColIndex, 1)
         }
         break
     }
@@ -957,17 +962,16 @@ class App extends React.Component<{}, AppState> {
     }
   }
 
-  setCommand = (action: Actions, command: Command) => {
+  setCommand = (action: Actions, command: CommandConfig) => {
     const activeSheet = this.wb1?.getActiveSheet()
     if (activeSheet) {
       const row = activeSheet.getActiveRowIndex()
       const col = activeSheet.getActiveColumnIndex()
       const cellType = activeSheet.getCellType(row, col) as any
 
-      const id = cellType.id ?? new Date().getTime()
-
       // Search command with provided "id"
-      const index = -1
+      const id: number = cellType.id ?? new Date().getTime()
+      const index = this.irionConfig.commands.findIndex((command) => command.id === id)
 
       if (index === -1) {
         // New
@@ -975,15 +979,17 @@ class App extends React.Component<{}, AppState> {
           return
         }
 
+        // Set cell id
+        cellType.id = id
         // Update IrionConfig
-        // this.irionConfig.commands.push(command)
+        this.irionConfig.commands.push({ ...command, id })
       } else {
         // Found
         // Update IrionConfig
         if (action === Actions.Delete) {
-          // this.irionConfig.commands.splice(index, 1)
+          this.irionConfig.commands.splice(index, 1)
         } else {
-          // this.irionConfig.commands.splice(index, 1, command)
+          this.irionConfig.commands.splice(index, 1, { ...command, id })
         }
       }
     }
@@ -1076,15 +1082,16 @@ class App extends React.Component<{}, AppState> {
 
           const isButtonCellType = cellType instanceof GC.Spread.Sheets.CellTypes.Button
           if (isButtonCellType) {
-            const id = cellType.id
+            const id = (cellType as any).id
+
+            let commandConfig = null
             if (id) {
               // Search button config in IrionConfig
-            } else {
-              // New button
-              this.setState({
-                commandConfig: null,
-              })
+              const command = this.irionConfig.commands.find((command) => command.id === id) ?? null
+              commandConfig = command
             }
+            this.setState({ commandConfig })
+
             this.toggleCommandConfigModal(true)
 
             // var fbx = new GC.Spread.Sheets.FormulaTextBox.FormulaTextBox(document.getElementById('formulaBar')!, {
@@ -1109,7 +1116,7 @@ class App extends React.Component<{}, AppState> {
         execute: async (context: any, propertyName: any, fontItalicChecked: any) => {
           const activeSheet: GC.Spread.Sheets.Worksheet = context.Spread.getActiveSheet()
 
-          const boundedTable = getBoundedTable(activeSheet, this.irionConfig)
+          const boundedTable = getBoundedTable(activeSheet, this.irionConfig.tables)
           if (boundedTable) {
             this.toggleAddComputedModal(true)
           }
@@ -1126,7 +1133,7 @@ class App extends React.Component<{}, AppState> {
           const activeSheet: GC.Spread.Sheets.Worksheet = context.Spread.getActiveSheet()
           const col = activeSheet.getActiveColumnIndex()
 
-          const boundedTable = getBoundedTable(activeSheet, this.irionConfig)
+          const boundedTable = getBoundedTable(activeSheet, this.irionConfig.tables)
           if (boundedTable) {
             const { table, tableConfig } = boundedTable
 
@@ -1160,7 +1167,7 @@ class App extends React.Component<{}, AppState> {
         // bigButton: 'true',
         commandName: 'resetIrionConfig',
         execute: async (context: any, propertyName: any, fontItalicChecked: any) => {
-          this.irionConfig = []
+          this.irionConfig = { tables: [], commands: [] }
         },
       },
       resizeTableStrategy: {
