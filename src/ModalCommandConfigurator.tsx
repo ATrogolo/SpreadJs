@@ -33,7 +33,7 @@ interface Action {
   label: string
 }
 
-const INIT_COMMAND = {
+const INIT_COMMAND: Command = {
   name: null,
   parameters: [],
 }
@@ -208,9 +208,9 @@ export class ModalCommandConfigurator extends React.Component<
             <button
               className="btn-remove"
               onClick={() => {
-                this.setState({ command: INIT_COMMAND })
-
                 this.props.setCommand(Actions.Delete, this.state.command)
+
+                this.setState({ command: INIT_COMMAND })
                 this.props.toggleCommandConfigModal(false)
               }}
             >
@@ -228,9 +228,9 @@ export class ModalCommandConfigurator extends React.Component<
             <button
               className="btn-save"
               onClick={() => {
-                this.setState({ command: INIT_COMMAND })
-
                 this.props.setCommand(Actions.Update, this.state.command)
+
+                this.setState({ command: INIT_COMMAND })
                 this.props.toggleCommandConfigModal(false)
               }}
             >

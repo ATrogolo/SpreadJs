@@ -89,8 +89,6 @@ const TABLE_SELECTED = 'TableSelected'
 const BUTTON_SELECTED = 'ButtonSelected'
 const DIALOG_GET_RANGE = 'GetRange'
 const START_PERFORMANCE_TEST = false
-const PERF_ROWS = 1000
-const PERF_COLS = 14
 
 const INIT_EDIT_COMPUTEDCOL = { isOpen: false, tableName: '', computedColumn: null }
 
@@ -1502,27 +1500,29 @@ class App extends React.Component<{}, AppState> {
     const data = this.sizeOrdersTable(rows, cols)
 
     if (sheet) {
-      const t0 = performance.now()
       const tableUniqueName = 'Orders_' + new Date().getTime()
+      const t0 = performance.now()
       this.setTable(data, '', row, col, tableUniqueName, sheet)
       const t1 = performance.now()
 
-      console.log('%cTime spent to insert data: ' + Math.floor(t1 - t0) / PERF_ROWS + ' sec', 'color: orange')
+      console.log('%cTime spent to insert data: ' + Math.floor(t1 - t0) / 1000 + ' sec', 'color: orange')
     }
   }
 
   sizeOrdersTable = (rows?: number, cols?: number) => {
     let data = getOrders()
+    const dataRows = data.length
+    const dataCols = Object.keys(data[0]).length
 
-    if (rows && rows < PERF_ROWS) {
+    if (rows && rows < dataRows) {
       data = data.slice(0, rows)
     }
-    if (cols && cols < PERF_COLS) {
+    if (cols && cols < dataCols) {
       data = data.map((row: any) => {
         const keys = Object.keys(row)
 
         let key
-        for (let i = cols; i < PERF_COLS; i++) {
+        for (let i = cols; i < dataCols; i++) {
           key = keys[i]
           delete row[key]
         }
@@ -1531,21 +1531,21 @@ class App extends React.Component<{}, AppState> {
       })
     }
 
-    if (rows && rows > PERF_ROWS) {
-      for (let i = PERF_ROWS; i < rows; i++) {
+    if (rows && rows > dataRows) {
+      for (let i = dataRows; i < rows; i++) {
         // Add new row
-        const randomIndex = Math.floor(Math.random() * PERF_ROWS)
+        const randomIndex = Math.floor(Math.random() * dataRows)
 
         const newItem = { ...data[randomIndex], id: i }
         data.push(newItem)
       }
     }
-    if (cols && cols > PERF_COLS) {
+    if (cols && cols > dataCols) {
       data = data.map((row: any) => {
         let key
-        for (let i = PERF_COLS; i < cols; i++) {
+        for (let i = dataCols; i < cols; i++) {
           key = `A${i}`
-          row[key] = Math.floor(Math.random() * PERF_ROWS)
+          row[key] = Math.floor(Math.random() * dataRows)
         }
 
         return row
